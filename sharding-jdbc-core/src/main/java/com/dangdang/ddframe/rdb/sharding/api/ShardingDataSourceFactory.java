@@ -23,10 +23,11 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import javax.sql.DataSource;
+import java.sql.SQLException;
 import java.util.Properties;
 
 /**
- * 分片数据源工厂.
+ * Sharding data source factory.
  * 
  * @author zhangliang 
  */
@@ -34,23 +35,25 @@ import java.util.Properties;
 public final class ShardingDataSourceFactory {
     
     /**
-     * 创建分片数据源.
+     * Create sharding data source.
      * 
-     * @param shardingRule 分片规则
-     * @return 分片数据源
+     * @param shardingRule rule for databases and tables sharding
+     * @return sharding data source
+     * @throws SQLException SQL exception
      */
-    public static DataSource createDataSource(final ShardingRule shardingRule) {
+    public static DataSource createDataSource(final ShardingRule shardingRule) throws SQLException {
         return new ShardingDataSource(shardingRule);
     }
     
     /**
-     * 创建分片数据源.
+     * Create sharding data source.
      * 
-     * @param shardingRule 分片规则
-     * @param props 属性配置
-     * @return 分片数据源
+     * @param shardingRule rule for databases and tables sharding
+     * @param props properties for data source
+     * @return sharding data source
+     * @throws SQLException SQL exception
      */
-    public static DataSource createDataSource(final ShardingRule shardingRule, final Properties props) {
+    public static DataSource createDataSource(final ShardingRule shardingRule, final Properties props) throws SQLException {
         return new ShardingDataSource(shardingRule, props);
     }
 }

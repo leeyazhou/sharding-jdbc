@@ -17,12 +17,17 @@
 
 package com.dangdang.ddframe.rdb.sharding.util;
 
+import com.dangdang.ddframe.rdb.sharding.parsing.parser.sql.SQLStatement;
+import com.dangdang.ddframe.rdb.sharding.routing.SQLExecutionUnit;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Collection;
+import java.util.List;
+
 /**
- * SQL日志对象.
+ * SQL logger.
  * 
  * @author zhangliang 
  */
@@ -31,12 +36,26 @@ import lombok.extern.slf4j.Slf4j;
 public final class SQLLogger {
     
     /**
-     * 记录日志.
+     * Print SQL log.
      * 
-     * @param pattern 格式
-     * @param arguments 参数列表
+     * @param logicSQL logic SQL
+     * @param sqlStatement SQL statement
+     * @param sqlExecutionUnits SQL execution units
+     * @param parameters parameters for SQL placeholder
      */
-    public static void log(final String pattern, final Object... arguments) {
+    public static void logSQL(final String logicSQL, final SQLStatement sqlStatement, final Collection<SQLExecutionUnit> sqlExecutionUnits, final List<Object> parameters) {
+        log("Logic SQL: {}", logicSQL);
+        log("SQLStatement: {}", sqlStatement);
+        for (SQLExecutionUnit each : sqlExecutionUnits) {
+            if (parameters.isEmpty()) {
+                log("Actual SQL: {} ::: {}", each.getDataSource(), each.getSql());
+            } else {
+                log("Actual SQL: {} ::: {} ::: {}", each.getDataSource(), each.getSql(), parameters);
+            }
+        }
+    }
+    
+    private static void log(final String pattern, final Object... arguments) {
         log.info(pattern, arguments);
     }
 }

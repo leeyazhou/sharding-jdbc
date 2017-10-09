@@ -23,10 +23,11 @@ import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
- * 笛卡尔积路由结果.
+ * Cartesian routing result.
  * 
  * @author gaohongtao
  * @author zhangliang
@@ -51,5 +52,16 @@ public final class CartesianRoutingResult extends RoutingResult {
             }
         }
         routingDataSources.add(new CartesianDataSource(dataSource, routingTableReference));
+    }
+    
+    @Override
+    public boolean isSingleRouting() {
+        Collection<CartesianTableReference> cartesianTableReferences = new LinkedList<>();
+        for (CartesianDataSource cartesianDataSource : routingDataSources) {
+            for (CartesianTableReference cartesianTableReference : cartesianDataSource.getRoutingTableReferences()) {
+                cartesianTableReferences.add(cartesianTableReference);
+            }
+        }
+        return 1 == cartesianTableReferences.size();
     }
 }

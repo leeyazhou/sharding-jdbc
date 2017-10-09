@@ -22,7 +22,7 @@ import com.dangdang.ddframe.rdb.sharding.merger.common.MemoryResultSetRow;
 import com.dangdang.ddframe.rdb.sharding.merger.groupby.aggregation.AggregationUnit;
 import com.dangdang.ddframe.rdb.sharding.merger.groupby.aggregation.AggregationUnitFactory;
 import com.dangdang.ddframe.rdb.sharding.parsing.parser.context.selectitem.AggregationSelectItem;
-import com.dangdang.ddframe.rdb.sharding.parsing.parser.statement.select.SelectStatement;
+import com.dangdang.ddframe.rdb.sharding.parsing.parser.sql.dql.select.SelectStatement;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
@@ -38,7 +38,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 /**
- * 内存分组归并结果集接口.
+ * Memory merger for group by.
  *
  * @author zhangliang
  */
@@ -48,7 +48,8 @@ public final class GroupByMemoryResultSetMerger extends AbstractMemoryResultSetM
     
     private final Iterator<MemoryResultSetRow> memoryResultSetRows;
     
-    public GroupByMemoryResultSetMerger(final Map<String, Integer> labelAndIndexMap, final List<ResultSet> resultSets, final SelectStatement selectStatement) throws SQLException {
+    public GroupByMemoryResultSetMerger(
+            final Map<String, Integer> labelAndIndexMap, final List<ResultSet> resultSets, final SelectStatement selectStatement) throws SQLException {
         super(labelAndIndexMap);
         this.selectStatement = selectStatement;
         memoryResultSetRows = init(resultSets);

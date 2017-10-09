@@ -23,16 +23,14 @@ import com.dangdang.ddframe.rdb.sharding.parsing.lexer.token.Assist;
 import com.dangdang.ddframe.rdb.sharding.parsing.lexer.token.DefaultKeyword;
 import com.dangdang.ddframe.rdb.sharding.parsing.lexer.token.Keyword;
 import com.dangdang.ddframe.rdb.sharding.parsing.lexer.token.TokenType;
-import com.dangdang.ddframe.rdb.sharding.parsing.parser.statement.delete.DeleteStatement;
-import com.dangdang.ddframe.rdb.sharding.parsing.parser.statement.insert.InsertStatement;
-import com.dangdang.ddframe.rdb.sharding.parsing.parser.statement.SQLStatement;
-import com.dangdang.ddframe.rdb.sharding.parsing.parser.statement.select.SelectStatement;
-import com.dangdang.ddframe.rdb.sharding.parsing.parser.statement.update.UpdateStatement;
 import com.dangdang.ddframe.rdb.sharding.parsing.parser.exception.SQLParsingException;
+import com.dangdang.ddframe.rdb.sharding.parsing.parser.sql.SQLStatement;
+import com.dangdang.ddframe.rdb.sharding.parsing.parser.sql.dml.DMLStatement;
+import com.dangdang.ddframe.rdb.sharding.parsing.parser.sql.dql.select.SelectStatement;
 import lombok.RequiredArgsConstructor;
 
 /**
- * SQL判断引擎.
+ * SQL judge engine.
  *
  * @author zhangliang
  */
@@ -42,9 +40,9 @@ public final class SQLJudgeEngine {
     private final String sql;
     
     /**
-     * 判断并获取SQL类型.
+     * judge SQL Type only.
      *
-     * @return SQL语句对象
+     * @return SQL statement
      */
     public SQLStatement judge() {
         Lexer lexer = new Lexer(sql, new Dictionary());
@@ -54,12 +52,8 @@ public final class SQLJudgeEngine {
             if (tokenType instanceof Keyword) {
                 if (DefaultKeyword.SELECT == tokenType) {
                     return new SelectStatement();
-                } else if (DefaultKeyword.UPDATE == tokenType) {
-                    return new UpdateStatement();
-                } else if (DefaultKeyword.INSERT == tokenType) {
-                    return new InsertStatement();
-                } else if (DefaultKeyword.DELETE == tokenType) {
-                    return new DeleteStatement();
+                } else if (DefaultKeyword.INSERT == tokenType || DefaultKeyword.UPDATE == tokenType || DefaultKeyword.DELETE == tokenType) {
+                    return new DMLStatement();
                 }
             }
             if (tokenType instanceof Assist && Assist.END == tokenType) {

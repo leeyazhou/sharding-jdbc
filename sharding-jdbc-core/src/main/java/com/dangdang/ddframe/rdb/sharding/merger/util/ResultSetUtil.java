@@ -17,6 +17,7 @@
 
 package com.dangdang.ddframe.rdb.sharding.merger.util;
 
+import com.dangdang.ddframe.rdb.sharding.constant.OrderType;
 import com.dangdang.ddframe.rdb.sharding.exception.ShardingJdbcException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 
 /**
- * 结果集工具类.
+ * ResultSet utility class.
  * 
  * @author gaohongtao
  */
@@ -35,11 +36,11 @@ import java.util.Date;
 public final class ResultSetUtil {
     
     /**
-     * 根据返回值类型返回特定类型的结果.
+     * Convert value via expected class type.
      * 
-     * @param value 原始结果
-     * @param convertType 返回值类型
-     * @return 特定类型的返回结果
+     * @param value original value
+     * @param convertType expected class type
+     * @return converted value
      */
     public static Object convertValue(final Object value, final Class<?> convertType) {
         if (null == value) {
@@ -63,6 +64,8 @@ public final class ResultSetUtil {
     
     private static Object convertNullValue(final Class<?> convertType) {
         switch (convertType.getName()) {
+            case "boolean":
+                return false;
             case "byte":
                 return (byte) 0;
             case "short":
@@ -71,10 +74,10 @@ public final class ResultSetUtil {
                 return 0;
             case "long":
                 return 0L;
-            case "double":
-                return 0D;
             case "float":
                 return 0F;
+            case "double":
+                return 0D;
             default:
                 return null;
         }
@@ -118,5 +121,28 @@ public final class ResultSetUtil {
             default:
                 throw new ShardingJdbcException("Unsupported Date type:%s", convertType);
         }
+    }
+    
+    /**
+     * Compare two object with order type.
+     * 
+     * @param thisValue this value
+     * @param otherValue other value
+     * @param orderType order type
+     * @param nullOrderType null value order type
+     * @return 比较结果
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public static int compareTo(final Comparable thisValue, final Comparable otherValue, final OrderType orderType, final OrderType nullOrderType) {
+        if (null == thisValue && null == otherValue) {
+            return 0;
+        }
+        if (null == thisValue) {
+            return orderType == nullOrderType ? -1 : 1;
+        }
+        if (null == otherValue) {
+            return orderType == nullOrderType ? 1 : -1;
+        }
+        return OrderType.ASC == orderType ? thisValue.compareTo(otherValue) : -thisValue.compareTo(otherValue);
     }
 }

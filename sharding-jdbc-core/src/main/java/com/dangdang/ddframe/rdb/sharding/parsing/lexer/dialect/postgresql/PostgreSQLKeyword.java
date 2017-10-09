@@ -20,29 +20,23 @@ package com.dangdang.ddframe.rdb.sharding.parsing.lexer.dialect.postgresql;
 import com.dangdang.ddframe.rdb.sharding.parsing.lexer.token.Keyword;
 
 /**
- * PostgreSQL词法关键词.
+ * PostgreSQL keyword.
  * 
  * @author zhangliang 
  */
 public enum PostgreSQLKeyword implements Keyword {
     
     SHOW,
-    OF,
-    IF,
     ONLY,
-    TRUE,
-    FALSE,
     ARRAY,
     FIRST,
     NEXT,
     LAST,
-    ROW,
     LIMIT,
     OFFSET,
     SIBLINGS,
     RESTART,
     RECURSIVE,
-    CASCADE,
     CURRENT,
     RESTRICT,
     NOWAIT,
@@ -52,8 +46,24 @@ public enum PostgreSQLKeyword implements Keyword {
     RETURNING,
     ROWS,
     SHARE,
-    TEMP,
-    TEMPORARY,
     IDENTITY,
-    WINDOW
+    WINDOW,
+    STATISTICS,
+    RESET,
+    PLAIN,
+    EXTERNAL,
+    EXTENDED,
+    MAIN,
+    VALID,
+    REPLICA,
+    ALWAYS,
+    RULE,
+    CLUSTER,
+    OIDS,
+    INHERIT,
+    OWNER,
+    DEFERRABLE,
+    INITIALLY,
+    DEFERRED,
+    IMMEDIATE
 }

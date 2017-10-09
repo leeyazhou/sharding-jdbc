@@ -17,12 +17,10 @@
 
 package com.dangdang.ddframe.rdb.sharding.executor.type.prepared;
 
-import com.codahale.metrics.Timer.Context;
 import com.dangdang.ddframe.rdb.sharding.constant.SQLType;
 import com.dangdang.ddframe.rdb.sharding.executor.BaseStatementUnit;
 import com.dangdang.ddframe.rdb.sharding.executor.ExecuteCallback;
 import com.dangdang.ddframe.rdb.sharding.executor.ExecutorEngine;
-import com.dangdang.ddframe.rdb.sharding.metrics.MetricsContext;
 import lombok.RequiredArgsConstructor;
 
 import java.sql.PreparedStatement;
@@ -31,7 +29,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * 多线程执行预编译语句对象请求的执行器.
+ * PreparedStatement Executor for multiple threads.
  * 
  * @author zhangliang
  * @author caohao
@@ -48,46 +46,34 @@ public final class PreparedStatementExecutor {
     private final List<Object> parameters;
     
     /**
-     * 执行SQL查询.
+     * Execute query.
      * 
-     * @return 结果集列表
+     * @return result set list
      */
     public List<ResultSet> executeQuery() {
-        Context context = MetricsContext.start("ShardingPreparedStatement-executeQuery");
-        List<ResultSet> result;
-        try {
-            result = executorEngine.executePreparedStatement(sqlType, preparedStatementUnits, parameters, new ExecuteCallback<ResultSet>() {
-                
-                @Override
-                public ResultSet execute(final BaseStatementUnit baseStatementUnit) throws Exception {
-                    return ((PreparedStatement) baseStatementUnit.getStatement()).executeQuery();
-                }
-            });
-        } finally {
-            MetricsContext.stop(context);
-        }
-        return result;
+        return executorEngine.executePreparedStatement(sqlType, preparedStatementUnits, parameters, new ExecuteCallback<ResultSet>() {
+            
+            @Override
+            public ResultSet execute(final BaseStatementUnit baseStatementUnit) throws Exception {
+                return ((PreparedStatement) baseStatementUnit.getStatement()).executeQuery();
+            }
+        });
     }
     
     /**
-     * 执行SQL更新.
+     * Execute update.
      * 
-     * @return 更新数量
+     * @return effected records count
      */
     public int executeUpdate() {
-        Context context = MetricsContext.start("ShardingPreparedStatement-executeUpdate");
-        try {
-            List<Integer> results = executorEngine.executePreparedStatement(sqlType, preparedStatementUnits, parameters, new ExecuteCallback<Integer>() {
-                
-                @Override
-                public Integer execute(final BaseStatementUnit baseStatementUnit) throws Exception {
-                    return ((PreparedStatement) baseStatementUnit.getStatement()).executeUpdate();
-                }
-            });
-            return accumulate(results);
-        } finally {
-            MetricsContext.stop(context);
-        }
+        List<Integer> results = executorEngine.executePreparedStatement(sqlType, preparedStatementUnits, parameters, new ExecuteCallback<Integer>() {
+            
+            @Override
+            public Integer execute(final BaseStatementUnit baseStatementUnit) throws Exception {
+                return ((PreparedStatement) baseStatementUnit.getStatement()).executeUpdate();
+            }
+        });
+        return accumulate(results);
     }
     
     private int accumulate(final List<Integer> results) {
@@ -99,26 +85,21 @@ public final class PreparedStatementExecutor {
     }
     
     /**
-     * 执行SQL请求.
-     * 
-     * @return true表示执行DQL, false表示执行的DML
+     * Execute SQL.
+     *
+     * @return return true if is DQL, false if is DML
      */
     public boolean execute() {
-        Context context = MetricsContext.start("ShardingPreparedStatement-execute");
-        try {
-            List<Boolean> result = executorEngine.executePreparedStatement(sqlType, preparedStatementUnits, parameters, new ExecuteCallback<Boolean>() {
-                
-                @Override
-                public Boolean execute(final BaseStatementUnit baseStatementUnit) throws Exception {
-                    return ((PreparedStatement) baseStatementUnit.getStatement()).execute();
-                }
-            });
-            if (null == result || result.isEmpty() || null == result.get(0)) {
-                return false;
+        List<Boolean> result = executorEngine.executePreparedStatement(sqlType, preparedStatementUnits, parameters, new ExecuteCallback<Boolean>() {
+            
+            @Override
+            public Boolean execute(final BaseStatementUnit baseStatementUnit) throws Exception {
+                return ((PreparedStatement) baseStatementUnit.getStatement()).execute();
             }
-            return result.get(0);
-        } finally {
-            MetricsContext.stop(context);
+        });
+        if (null == result || result.isEmpty() || null == result.get(0)) {
+            return false;
         }
+        return result.get(0);
     }
 }

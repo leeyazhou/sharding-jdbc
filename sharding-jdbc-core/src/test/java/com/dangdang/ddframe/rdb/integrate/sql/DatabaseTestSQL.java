@@ -17,101 +17,39 @@
 
 package com.dangdang.ddframe.rdb.integrate.sql;
 
-public interface DatabaseTestSQL {
+public class DatabaseTestSQL {
     
-    String getSelectCountAliasSql();
+    public static final String INSERT_ORDER_WITH_ALL_PLACEHOLDERS_SQL = "INSERT INTO t_order (order_id, user_id, status) VALUES (?, ?, ?)";
     
-    String getSelectSumAliasSql();
+    public static final String INSERT_ORDER_ITEM_WITH_ALL_PLACEHOLDERS_SQL = "INSERT INTO t_order_item (item_id, order_id, user_id, status) VALUES (?, ?, ?, ?)";
     
-    String getSelectMaxAliasSql();
+    public static final String INSERT_WITH_PARTIAL_PLACEHOLDERS_SQL = "INSERT INTO t_order (order_id, user_id, status) VALUES (%s, %s, ?)";
     
-    String getSelectMinAliasSql();
+    public static final String INSERT_WITH_AUTO_INCREMENT_COLUMN_SQL = "INSERT INTO t_order_item (order_id, user_id, status) VALUES (%s, %s, %s)";
     
-    String getSelectAvgAliasSql();
+    public static final String INSERT_WITHOUT_PLACEHOLDER_SQL = "INSERT INTO t_order (order_id, user_id, status) VALUES (%s, %s, 'insert')";
     
-    String getSelectCountWithBindingTableSql();
+    public static final String UPDATE_WITHOUT_ALIAS_SQL = "UPDATE t_order SET status = %s WHERE order_id = %s AND user_id = %s";
     
-    String getSelectCountWithBindingTableAndWithoutJoinSql();
+    public static final String UPDATE_WITH_ALIAS_SQL = "UPDATE t_order AS o SET o.status = ? WHERE o.order_id = ? AND o.user_id = ?";
     
-    String getInsertWithAllPlaceholdersSql();
+    public static final String UPDATE_WITHOUT_SHARDING_VALUE_SQL = "UPDATE t_order SET status = %s WHERE status = %s";
     
-    String getInsertWithPartialPlaceholdersSql();
+    public static final String DELETE_WITHOUT_ALIAS_SQL = "DELETE FROM t_order WHERE order_id = %s AND user_id = %s AND status = %s";
     
-    String getInsertWithoutPlaceholderSql();
+    public static final String DELETE_WITHOUT_SHARDING_VALUE_SQL = "DELETE FROM t_order WHERE status = %s";
     
-    String getInsertWithAutoIncrementColumnSql();
+    public static final String ASSERT_SELECT_WITH_STATUS_SQL = "SELECT * FROM t_order WHERE status = %s ORDER BY order_id";
     
-    String getUpdateWithoutAliasSql();
+    public static final String SELECT_EQUALS_WITH_SINGLE_TABLE_SQL = "SELECT * FROM t_order WHERE user_id = %s AND order_id = %s";
     
-    String getUpdateWithAliasSql();
+    public static final String SELECT_BETWEEN_WITH_SINGLE_TABLE_SQL = "SELECT * FROM t_order WHERE user_id BETWEEN %s AND %s AND order_id BETWEEN %s AND %s ORDER BY user_id, order_id";
     
-    String getUpdateWithoutShardingValueSql();
+    public static final String SELECT_IN_WITH_SINGLE_TABLE_SQL = "SELECT * FROM t_order WHERE user_id IN (%s, %s, %s) AND order_id IN (%s, %s) ORDER BY user_id, order_id";
     
-    String getDeleteWithoutAliasSql();
+    public static final String SELECT_COUNT_AS_ORDERS_COUNT_SQL = "SELECT COUNT(*) AS orders_count FROM t_order WHERE status = ?";
     
-    String getDeleteWithoutShardingValueSql();
+    public static final String SELECT_WITH_AUTO_INCREMENT_COLUMN_SQL = "SELECT item_id from t_order_item where user_id = %d and order_id= %s and status = 'BATCH'";
     
-    String getAssertSelectWithStatusSql();
-    
-    String getAssertSelectShardingTablesWithStatusSql();
-    
-    String getSelectSumWithGroupBySql();
-    
-    String getSelectSumWithOrderByAndGroupBySql();
-    
-    String getSelectSumWithOrderByDescAndGroupBySql();
-    
-    String getSelectCountWithGroupBySql();
-    
-    String getSelectMaxWithGroupBySql();
-    
-    String getSelectMinWithGroupBySql();
-    
-    String getSelectAvgWithGroupBySql();
-    
-    String getSelectEqualsWithSingleTableSql();
-    
-    String getSelectBetweenWithSingleTableSql();
-    
-    String getSelectInWithSingleTableSql();
-    
-    String getSelectOrderByWithAliasSql();
-    
-    String getSelectPagingWithOffsetAndRowCountSql();
-    
-    String getSelectPagingWithRowCountSql();
-    
-    String getSelectPagingWithOffsetSql();
-    
-    String getSelectLikeWithCountSql();
-    
-    String getSelectGroupWithBindingTableSql();
-    
-    String getSelectGroupWithBindingTableAndConfigSql();
-    
-    String getSelectGroupWithoutGroupedColumnSql();
-    
-    String getSelectWithNoShardingTableSql();
-    
-    String getSelectForFullTableNameWithSingleTableSql();
-    
-    String getSelectWithBindingTableSql();
-    
-    String getSelectIteratorSql();
-    
-    String getSelectSubquerySingleTableWithParenthesesSql();
-    
-    String getSelectSubqueryMultiTableWithParenthesesSql();
-    
-    String getSelectGroupByUserIdSql();
-    
-    String getSelectUserIdByStatusSql();
-    
-    String getSelectUserIdByInStatusSql();
-    
-    String getSelectUserIdByStatusOrderByUserIdSql();
-    
-    String getSelectAllOrderSql();
-    
-    String getSelectUserIdWhereOrderIdInSql();
+    public static final String SELECT_WITH_ALIAS_SQL = "SELECT user_id AS usr_id FROM t_order WHERE status = 'init'";
 }

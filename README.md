@@ -1,12 +1,14 @@
 # Sharding-JDBC - JDBC driver for shard databases and tables 
 
-# [中文主页](http://dangdangdotcom.github.io/sharding-jdbc)
+# [Homepage](http://shardingjdbc.io/)
 
-[![Build Status](https://secure.travis-ci.org/dangdangdotcom/sharding-jdbc.png?branch=master)](https://travis-ci.org/dangdangdotcom/sharding-jdbc)
+# [中文主页](http://shardingjdbc.io/index_zh.html)
+
+[![Build Status](https://secure.travis-ci.org/shardingjdbc/sharding-jdbc.png?branch=master)](https://travis-ci.org/dangdangdotcom/sharding-jdbc)
 [![Maven Status](https://maven-badges.herokuapp.com/maven-central/com.dangdang/sharding-jdbc/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.dangdang/sharding-jdbc)
-[![Coverage Status](https://coveralls.io/repos/dangdangdotcom/sharding-jdbc/badge.svg?branch=master&service=github)](https://coveralls.io/github/dangdangdotcom/sharding-jdbc?branch=master)
-[![GitHub release](https://img.shields.io/github/release/dangdangdotcom/sharding-jdbc.svg)](https://github.com/dangdangdotcom/sharding-jdbc/releases)
-[![Hex.pm](http://dangdangdotcom.github.io/sharding-jdbc/img/license.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
+[![Coverage Status](https://coveralls.io/repos/shardingjdbc/sharding-jdbc/badge.svg?branch=master&service=github)](https://coveralls.io/github/shardingjdbc/sharding-jdbc?branch=master)
+[![GitHub release](https://img.shields.io/github/release/shardingjdbc/sharding-jdbc.svg)](https://github.com/shardingjdbc/sharding-jdbc/releases)
+[![Hex.pm](http://shardingjdbc.github.io/sharding-jdbc/img/license.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 
 # Overview
 
@@ -32,7 +34,7 @@ Sharding-JDBC is a JDBC extension, provides distributed features such as shardin
 ## 4. Compatibility
 * ORM self-adapting. JPA, Hibernate, Mybatis, Spring JDBC Template or JDBC supported.
 * Connection-pool self-adapting. DBCP, C3P0, BoneCP, Druid supported.
-* Any Database supported theoretically. MySQL support only, will support Oracle, SQLServer, DB2 and PostgreSQL in future.
+* Any Database supported theoretically. Support MySQL, Oracle, SQLServer and PostgreSQL.
 
 ## 5. Configuration
 * Java config
@@ -45,9 +47,9 @@ Sharding-JDBC is a JDBC extension, provides distributed features such as shardin
 
 # Architecture
 
-![Architecture](http://dangdangdotcom.github.io/sharding-jdbc/img/architecture_en.png)
+![Architecture](http://ovfotjrsi.bkt.clouddn.com/docs/img/architecture_en.png)
 
-# [Release Notes](https://github.com/dangdangdotcom/sharding-jdbc/releases)
+# [Release Notes](https://github.com/shardingjdbc/sharding-jdbc/releases)
 
 # [Roadmap](ROADMAP.md)
 

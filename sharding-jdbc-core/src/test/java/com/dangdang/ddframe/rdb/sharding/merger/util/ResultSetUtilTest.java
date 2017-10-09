@@ -17,6 +17,7 @@
 
 package com.dangdang.ddframe.rdb.sharding.merger.util;
 
+import com.dangdang.ddframe.rdb.sharding.constant.OrderType;
 import com.dangdang.ddframe.rdb.sharding.exception.ShardingJdbcException;
 import org.junit.Test;
 
@@ -60,6 +61,7 @@ public final class ResultSetUtilTest {
     
     @Test
     public void assertConvertNullValue() {
+        assertThat(ResultSetUtil.convertValue(null, boolean.class), is((Object) false));
         assertThat(ResultSetUtil.convertValue(null, byte.class), is((Object) (byte) 0));
         assertThat(ResultSetUtil.convertValue(null, short.class), is((Object) (short) 0));
         assertThat(ResultSetUtil.convertValue(null, int.class), is((Object) 0));
@@ -84,5 +86,60 @@ public final class ResultSetUtilTest {
     @Test(expected = ShardingJdbcException.class)
     public void assertConvertDateValueError() {
         ResultSetUtil.convertValue(new Date(), int.class);
+    }
+    
+    @Test
+    public void assertCompareToWhenBothNull() {
+        assertThat(ResultSetUtil.compareTo(null, null, OrderType.DESC, OrderType.ASC), is(0)); 
+    }
+    
+    @Test
+    public void assertCompareToWhenFirstValueIsNullForOrderByAscAndNullOrderByAsc() {
+        assertThat(ResultSetUtil.compareTo(null, 1, OrderType.ASC, OrderType.ASC), is(-1));
+    }
+    
+    @Test
+    public void assertCompareToWhenFirstValueIsNullForOrderByAscAndNullOrderByDesc() {
+        assertThat(ResultSetUtil.compareTo(null, 1, OrderType.ASC, OrderType.DESC), is(1));
+    }
+    
+    @Test
+    public void assertCompareToWhenFirstValueIsNullForOrderByDescAndNullOrderByAsc() {
+        assertThat(ResultSetUtil.compareTo(null, 1, OrderType.DESC, OrderType.ASC), is(1));
+    }
+    
+    @Test
+    public void assertCompareToWhenFirstValueIsNullForOrderByDescAndNullOrderByDesc() {
+        assertThat(ResultSetUtil.compareTo(null, 1, OrderType.DESC, OrderType.DESC), is(-1));
+    }
+    
+    @Test
+    public void assertCompareToWhenSecondValueIsNullForOrderByAscAndNullOrderByAsc() {
+        assertThat(ResultSetUtil.compareTo(1, null, OrderType.ASC, OrderType.ASC), is(1));
+    }
+    
+    @Test
+    public void assertCompareToWhenSecondValueIsNullForOrderByAscAndNullOrderByDesc() {
+        assertThat(ResultSetUtil.compareTo(1, null, OrderType.ASC, OrderType.DESC), is(-1));
+    }
+    
+    @Test
+    public void assertCompareToWhenSecondValueIsNullForOrderByDescAndNullOrderByAsc() {
+        assertThat(ResultSetUtil.compareTo(1, null, OrderType.DESC, OrderType.ASC), is(-1));
+    }
+    
+    @Test
+    public void assertCompareToWhenSecondValueIsNullForOrderByDescAndNullOrderByDesc() {
+        assertThat(ResultSetUtil.compareTo(1, null, OrderType.DESC, OrderType.DESC), is(1));
+    }
+    
+    @Test
+    public void assertCompareToWhenAsc() {
+        assertThat(ResultSetUtil.compareTo(1, 2, OrderType.ASC, OrderType.ASC), is(-1));
+    }
+    
+    @Test
+    public void assertCompareToWhenDesc() {
+        assertThat(ResultSetUtil.compareTo(1, 2, OrderType.DESC, OrderType.ASC), is(1));
     }
 }

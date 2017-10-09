@@ -18,7 +18,6 @@
 package com.dangdang.ddframe.rdb.sharding.routing.strategy;
 
 import com.dangdang.ddframe.rdb.sharding.api.ShardingValue;
-import com.dangdang.ddframe.rdb.sharding.constant.SQLType;
 import com.google.common.base.Preconditions;
 import lombok.Getter;
 
@@ -27,7 +26,7 @@ import java.util.Collections;
 import java.util.TreeSet;
 
 /**
- * 分片策略.
+ * Sharding strategy.
  * 
  * @author zhangliang
  */
@@ -49,17 +48,15 @@ public class ShardingStrategy {
     }
     
     /**
-     * 计算静态分片.
+     * Calculate static sharding info.
      *
-     * @param sqlType SQL语句的类型
-     * @param availableTargetNames 所有的可用分片资源集合
-     * @param shardingValues 分片值集合
-     * @return 分库后指向的数据源名称集合
+     * @param availableTargetNames available data sources or tables's names
+     * @param shardingValues sharding values
+     * @return sharding results for data sources or tables's names
      */
-    public Collection<String> doStaticSharding(final SQLType sqlType, final Collection<String> availableTargetNames, final Collection<ShardingValue<?>> shardingValues) {
+    public Collection<String> doStaticSharding(final Collection<String> availableTargetNames, final Collection<ShardingValue<?>> shardingValues) {
         Collection<String> result = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
         if (shardingValues.isEmpty()) {
-            Preconditions.checkState(!isInsertMultiple(sqlType, availableTargetNames), "INSERT statement should contain sharding value.");
             result.addAll(availableTargetNames);
         } else {
             result.addAll(doSharding(shardingValues, availableTargetNames));
@@ -68,10 +65,10 @@ public class ShardingStrategy {
     }
     
     /**
-     * 计算动态分片.
+     * Calculate dynamic sharding info.
      *
-     * @param shardingValues 分片值集合
-     * @return 分库后指向的分片资源集合
+     * @param shardingValues sharding values
+     * @return sharding results for data sources or tables's names
      */
     public Collection<String> doDynamicSharding(final Collection<ShardingValue<?>> shardingValues) {
         Preconditions.checkState(!shardingValues.isEmpty(), "Dynamic table should contain sharding value.");
@@ -104,9 +101,5 @@ public class ShardingStrategy {
             return ((MultipleKeysShardingAlgorithm) shardingAlgorithm).doSharding(availableTargetNames, shardingValues);
         }
         throw new UnsupportedOperationException(shardingAlgorithm.getClass().getName());
-    }
-    
-    private boolean isInsertMultiple(final SQLType sqlType, final Collection<String> availableTargetNames) {
-        return SQLType.INSERT == sqlType && availableTargetNames.size() > 1;
     }
 }

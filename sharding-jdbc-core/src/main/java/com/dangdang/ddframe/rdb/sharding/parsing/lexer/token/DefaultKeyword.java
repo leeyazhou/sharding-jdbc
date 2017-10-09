@@ -18,124 +18,256 @@
 package com.dangdang.ddframe.rdb.sharding.parsing.lexer.token;
 
 /**
- * 默认词法关键词.
+ * Default keyword.
  * 
  * @author zhangliang 
  */
 public enum DefaultKeyword implements Keyword {
     
-    SELECT,
-    DELETE,
-    INSERT,
-    UPDATE,
-    CREATE,
-    ALTER,
-    DROP,
-    TRUNCATE,
-    REPLACE,
-    DECLARE,
-    GRANT,
-    REVOKE,
-    AS,
-    DISTINCT,
-    DISTINCTROW,
-    MAX,
-    MIN,
-    SUM,
-    AVG,
-    COUNT,
+    /*
+    Common
+     */
+    SCHEMA,
+    DATABASE,
+    TABLE,
+    COLUMN,
+    VIEW,
+    INDEX,
+    TRIGGER,
+    PROCEDURE,
+    TABLESPACE,
+    FUNCTION,
+    SEQUENCE,
+    CURSOR,
     FROM,
+    TO,
+    OF,
+    IF,
+    ON,
+    FOR,
+    WHILE,
+    DO,
+    NO,
+    BY,
+    WITH,
+    WITHOUT,
+    TRUE,
+    FALSE,
+    TEMPORARY,
+    TEMP,
+    COMMENT,
+    
+    /*
+    Create
+    */
+    CREATE,
+    REPLACE,
+    BEFORE,
+    AFTER,
+    INSTEAD,
+    EACH,
+    ROW,
+    STATEMENT,
+    EXECUTE,
+    BITMAP,
+    NOSORT,
+    REVERSE,
+    COMPILE,
+    
+    /*
+    Alter
+     */
+    ALTER,
+    ADD,
+    MODIFY,
+    RENAME,
+    ENABLE,
+    DISABLE,
+    VALIDATE,
+    USER,
+    IDENTIFIED,
+    
+    /*
+    Truncate
+     */
+    TRUNCATE,
+    
+    /*
+    Drop
+     */
+    DROP,
+    CASCADE,
+    
+    /*
+    Insert
+     */
+    INSERT,
+    INTO,
+    VALUES,
+    
+    /*
+    Update
+     */
+    UPDATE,
+    SET,
+    
+    /*
+    Delete
+     */
+    DELETE,
+    
+    /*
+    Select
+     */
+    SELECT,
+    DISTINCT,
+    AS,
+    CASE,
+    WHEN,
+    ELSE,
+    THEN,
+    END,
+    LEFT, 
+    RIGHT,
+    FULL,
+    INNER,
+    OUTER,
+    CROSS,
+    JOIN,
+    USE,
+    USING,
+    NATURAL,
     WHERE,
     ORDER,
     ASC,
     DESC,
     GROUP,
-    BY,
     HAVING,
-    INTO,
-    VALUES,
-    COLUMN,
-    TABLE,
-    TABLESPACE,
-    SET,
-    PRIMARY,
-    KEY,
-    INDEX,
-    CONSTRAINT,
-    CHECK,
-    UNIQUE,
-    FOREIGN,
-    REFERENCES,
-    INNER,
-    LEFT,
-    RIGHT,
-    FULL,
-    OUTER,
-    CROSS, 
-    JOIN,
-    STRAIGHT_JOIN,
-    APPLY,
-    ON,
-    IS,
-    IN,
-    BETWEEN,
-    LIKE,
-    AND,
-    OR,
-    XOR,
-    NULL,
-    NOT,
-    FOR,
-    ALL,
     UNION,
+    
+    /*
+    Other Command
+     */
+    DECLARE,
+    GRANT,
+    FETCH,
+    REVOKE,
+    CLOSE,
+    
+    /*
+    Others
+     */
     CAST,
-    USE,
-    USING,
-    TO,
-    CASE,
-    WHEN,
-    THEN,
-    ELSE,
-    END,
-    EXISTS,
     NEW,
     ESCAPE,
-    INTERVAL,
     LOCK,
     SOME,
-    ANY,
-    WHILE,
-    DO,
     LEAVE,
     ITERATE,
     REPEAT,
     UNTIL,
     OPEN,
-    CLOSE,
     OUT,
     INOUT,
     OVER,
-    FETCH,
-    WITH,
-    CURSOR,
     ADVISE,
     SIBLINGS,
     LOOP,
-    ENABLE,
-    DISABLE,
     EXPLAIN,
-    SCHEMA,
-    DATABASE,
-    VIEW,
-    SEQUENCE,
-    TRIGGER,
-    PROCEDURE,
-    FUNCTION,
     DEFAULT,
     EXCEPT,
     INTERSECT,
     MINUS,
-    USER,
     PASSWORD,
-    CONNECT_BY_ROOT
+    LOCAL,
+    GLOBAL,
+    STORAGE,
+    DATA,
+    COALESCE,
+    
+    /*
+    Types
+     */
+    CHAR,
+    CHARACTER,
+    VARYING,
+    VARCHAR,
+    VARCHAR2,
+    INTEGER,
+    INT,
+    SMALLINT,
+    DECIMAL,
+    DEC,
+    NUMERIC,
+    FLOAT,
+    REAL,
+    DOUBLE,
+    PRECISION,
+    DATE,
+    TIME,
+    INTERVAL,
+    BOOLEAN,
+    BLOB,
+    
+    /*
+    Conditionals
+     */
+    AND,
+    OR,
+    XOR,
+    IS,
+    NOT,
+    NULL,
+    IN,
+    BETWEEN,
+    LIKE,
+    ANY,
+    ALL,
+    EXISTS,
+    
+    /*
+    Functions
+     */
+    AVG,
+    MAX,
+    MIN,
+    SUM,
+    COUNT,
+    GREATEST,
+    LEAST,
+    ROUND,
+    TRUNC,
+    POSITION,
+    EXTRACT,
+    LENGTH,
+    CHAR_LENGTH,
+    SUBSTRING,
+    SUBSTR,
+    INSTR,
+    INITCAP,
+    UPPER,
+    LOWER,
+    TRIM,
+    LTRIM,
+    RTRIM,
+    BOTH,
+    LEADING,
+    TRAILING,
+    TRANSLATE,
+    CONVERT,
+    LPAD,
+    RPAD,
+    DECODE,
+    NVL,
+    
+    /*
+    Constraints
+     */
+    CONSTRAINT,
+    UNIQUE,
+    PRIMARY,
+    FOREIGN,
+    KEY,
+    CHECK,
+    REFERENCES
 }

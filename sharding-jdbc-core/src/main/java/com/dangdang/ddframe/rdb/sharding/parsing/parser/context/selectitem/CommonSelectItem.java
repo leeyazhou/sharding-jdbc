@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
- * 选择项.
+ * Common select item.
  *
  * @author zhangliang
  */
@@ -35,6 +35,4 @@ public final class CommonSelectItem implements SelectItem {
     private final String expression;
     
     private final Optional<String> alias;
-    
-    private final boolean star;
 }

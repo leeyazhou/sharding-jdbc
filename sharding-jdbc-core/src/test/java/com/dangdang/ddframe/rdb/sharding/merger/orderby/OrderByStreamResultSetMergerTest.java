@@ -21,7 +21,7 @@ import com.dangdang.ddframe.rdb.sharding.constant.OrderType;
 import com.dangdang.ddframe.rdb.sharding.merger.MergeEngine;
 import com.dangdang.ddframe.rdb.sharding.merger.ResultSetMerger;
 import com.dangdang.ddframe.rdb.sharding.parsing.parser.context.OrderItem;
-import com.dangdang.ddframe.rdb.sharding.parsing.parser.statement.select.SelectStatement;
+import com.dangdang.ddframe.rdb.sharding.parsing.parser.sql.dql.select.SelectStatement;
 import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,7 +53,7 @@ public final class OrderByStreamResultSetMergerTest {
         when(resultSet.getMetaData()).thenReturn(resultSetMetaData);
         resultSets = Lists.newArrayList(resultSet, mock(ResultSet.class), mock(ResultSet.class));
         selectStatement = new SelectStatement();
-        selectStatement.getOrderByItems().add(new OrderItem(1, OrderType.ASC));
+        selectStatement.getOrderByItems().add(new OrderItem(1, OrderType.ASC, OrderType.ASC));
     }
     
     @Test

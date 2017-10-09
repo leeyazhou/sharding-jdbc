@@ -18,14 +18,14 @@
 package com.dangdang.ddframe.rdb.sharding.routing;
 
 import com.dangdang.ddframe.rdb.sharding.jdbc.core.ShardingContext;
-import com.dangdang.ddframe.rdb.sharding.parsing.parser.statement.SQLStatement;
+import com.dangdang.ddframe.rdb.sharding.parsing.parser.sql.SQLStatement;
 import com.dangdang.ddframe.rdb.sharding.routing.router.SQLRouter;
 import com.dangdang.ddframe.rdb.sharding.routing.router.SQLRouterFactory;
 
 import java.util.Collections;
 
 /**
- * SQL路由器.
+ * Statement routing engine.
  * 
  * @author zhangiang
  */
@@ -38,10 +38,10 @@ public final class StatementRoutingEngine {
     }
     
     /**
-     * SQL路由.
+     * SQL route.
      *
-     * @param logicSQL 逻辑SQL
-     * @return 路由结果
+     * @param logicSQL logic SQL
+     * @return route result
      */
     public SQLRouteResult route(final String logicSQL) {
         SQLStatement sqlStatement = sqlRouter.parse(logicSQL, 0);

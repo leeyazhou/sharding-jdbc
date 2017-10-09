@@ -22,24 +22,32 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
- * 数字工具类.
+ * Number utility class.
  *
  * @author caohao
+ * @author zhangliang
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public final class NumberUtil {
     
     /**
-     * 将数字类型对象四舍五入并转换为整形.
+     * Round half up.
      *
-     * @param obj 待转换的对象
-     * @return 四舍五入后的整形值
+     * @param obj object to be converted
+     * @return rounded half up number
      */
     public static int roundHalfUp(final Object obj) {
+        if (obj instanceof Short) {
+            return (short) obj;
+        }
         if (obj instanceof Integer) {
             return (int) obj;
+        }
+        if (obj instanceof Long) {
+            return ((Long) obj).intValue();
         }
         if (obj instanceof Double) {
             return new BigDecimal((double) obj).setScale(0, BigDecimal.ROUND_HALF_UP).intValue();
@@ -51,5 +59,23 @@ public final class NumberUtil {
             return new BigDecimal((String) obj).setScale(0, BigDecimal.ROUND_HALF_UP).intValue();
         }
         throw new ShardingJdbcException("Invalid value to transfer: %s", obj);
+    }
+    
+    /**
+     * Get exactly number value and type.
+     * 
+     * @param value string to be converted
+     * @param radix radix
+     * @return exactly number value and type
+     */
+    public static Number getExactlyNumber(final String value, final int radix) {
+        BigInteger result = new BigInteger(value, radix);
+        if (result.compareTo(new BigInteger(String.valueOf(Integer.MIN_VALUE))) >= 0 && result.compareTo(new BigInteger(String.valueOf(Integer.MAX_VALUE))) <= 0) {
+            return result.intValue();
+        }
+        if (result.compareTo(new BigInteger(String.valueOf(Long.MIN_VALUE))) >= 0 && result.compareTo(new BigInteger(String.valueOf(Long.MAX_VALUE))) <= 0) {
+            return result.longValue();
+        }
+        return result;
     }
 }

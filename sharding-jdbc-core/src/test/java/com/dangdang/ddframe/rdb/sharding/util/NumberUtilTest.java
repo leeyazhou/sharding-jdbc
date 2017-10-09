@@ -20,15 +20,31 @@ package com.dangdang.ddframe.rdb.sharding.util;
 import com.dangdang.ddframe.rdb.sharding.exception.ShardingJdbcException;
 import org.junit.Test;
 
+import java.math.BigInteger;
+
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 public final class NumberUtilTest {
     
     @Test
+    public void assertRoundHalfUpWithShort() {
+        short i = 1;
+        short j = 2;
+        assertThat(NumberUtil.roundHalfUp(i), is(1));
+        assertThat(NumberUtil.roundHalfUp(j), is(2));
+    }
+    
+    @Test
     public void assertRoundHalfUpWithInteger() {
         assertThat(NumberUtil.roundHalfUp(1), is(1));
         assertThat(NumberUtil.roundHalfUp(2), is(2));
+    }
+    
+    @Test
+    public void assertRoundHalfUpWithLong() {
+        assertThat(NumberUtil.roundHalfUp(1L), is(1));
+        assertThat(NumberUtil.roundHalfUp(2L), is(2));
     }
     
     @Test
@@ -52,5 +68,29 @@ public final class NumberUtilTest {
     @Test(expected = ShardingJdbcException.class)
     public void assertRoundHalfUpWithInvalidType() {
         NumberUtil.roundHalfUp(new Object());
+    }
+    
+    @Test
+    public void assertGetExactlyNumberForInteger() {
+        assertThat(NumberUtil.getExactlyNumber("100000", 10), is((Number) 100000));
+        assertThat(NumberUtil.getExactlyNumber("100000", 16), is((Number) 1048576));
+        assertThat(NumberUtil.getExactlyNumber(String.valueOf(Integer.MIN_VALUE), 10), is((Number) Integer.MIN_VALUE));
+        assertThat(NumberUtil.getExactlyNumber(String.valueOf(Integer.MAX_VALUE), 10), is((Number) Integer.MAX_VALUE));
+    }
+    
+    @Test
+    public void assertGetExactlyNumberForLong() {
+        assertThat(NumberUtil.getExactlyNumber("100000000000", 10), is((Number) 100000000000L));
+        assertThat(NumberUtil.getExactlyNumber("100000000000", 16), is((Number) 17592186044416L));
+        assertThat(NumberUtil.getExactlyNumber(String.valueOf(Long.MIN_VALUE), 10), is((Number) Long.MIN_VALUE));
+        assertThat(NumberUtil.getExactlyNumber(String.valueOf(Long.MAX_VALUE), 10), is((Number) Long.MAX_VALUE));
+    }
+    
+    @Test
+    public void assertGetExactlyNumberForBigInteger() {
+        assertThat(NumberUtil.getExactlyNumber("10000000000000000000", 10), is((Number) new BigInteger("10000000000000000000")));
+        assertThat(NumberUtil.getExactlyNumber("10000000000000000000", 16), is((Number) new BigInteger("75557863725914323419136")));
+        assertThat(NumberUtil.getExactlyNumber(String.valueOf(Long.MIN_VALUE + 1), 10), is((Number) (Long.MIN_VALUE + 1)));
+        assertThat(NumberUtil.getExactlyNumber(String.valueOf(Long.MAX_VALUE - 1), 10), is((Number) (Long.MAX_VALUE - 1)));
     }
 }

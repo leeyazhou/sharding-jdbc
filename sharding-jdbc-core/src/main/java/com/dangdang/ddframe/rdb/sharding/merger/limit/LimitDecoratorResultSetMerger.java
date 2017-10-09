@@ -24,7 +24,7 @@ import com.dangdang.ddframe.rdb.sharding.parsing.parser.context.limit.Limit;
 import java.sql.SQLException;
 
 /**
- * 分页结果集归并.
+ * Decorator merger for limit.
  *
  * @author zhangliang
  */
@@ -57,7 +57,7 @@ public final class LimitDecoratorResultSetMerger extends AbstractDecoratorResult
         if (skipAll) {
             return false;
         }
-        if (limit.getRowCountValue() > 0) {
+        if (limit.getRowCountValue() > -1) {
             return ++rowNumber <= limit.getRowCountValue() && getResultSetMerger().next();
         }
         return getResultSetMerger().next();

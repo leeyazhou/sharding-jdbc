@@ -24,13 +24,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 词法符号标记.
+ * Symbol token.
  *
  * @author zhangliang
  */
 @RequiredArgsConstructor
 @Getter
-public enum Symbol implements TokenType {
+public enum Symbol implements TokenType, Keyword {
     
     LEFT_PAREN("("),
     RIGHT_PAREN(")"),
@@ -70,15 +70,20 @@ public enum Symbol implements TokenType {
     DOUBLE_BAR("||"),
     DOUBLE_LT("<<"),
     DOUBLE_GT(">>"),
-    MONKEYS_AT("@"),
+    AT("@"),
     POUND("#");
     
     private static Map<String, Symbol> symbols = new HashMap<>(128);
+    
+    @Getter
+    private static Symbol[] operators;
     
     static {
         for (Symbol each : Symbol.values()) {
             symbols.put(each.getLiterals(), each);
         }
+        operators = new Symbol
+                [] {PLUS, SUB, STAR, SLASH, EQ, GT, LT, CARET, PERCENT, LT_EQ, GT_EQ, LT_EQ_GT, LT_GT, BANG_EQ, BANG_GT, BANG_LT, AMP, BAR, DOUBLE_AMP, DOUBLE_BAR, DOUBLE_LT, DOUBLE_GT};
     }
     
     private final String literals;

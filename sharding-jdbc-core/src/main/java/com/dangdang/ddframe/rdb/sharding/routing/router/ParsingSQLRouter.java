@@ -17,16 +17,14 @@
 
 package com.dangdang.ddframe.rdb.sharding.routing.router;
 
-import com.codahale.metrics.Timer.Context;
 import com.dangdang.ddframe.rdb.sharding.api.rule.ShardingRule;
 import com.dangdang.ddframe.rdb.sharding.constant.DatabaseType;
 import com.dangdang.ddframe.rdb.sharding.jdbc.core.ShardingContext;
-import com.dangdang.ddframe.rdb.sharding.metrics.MetricsContext;
 import com.dangdang.ddframe.rdb.sharding.parsing.SQLParsingEngine;
 import com.dangdang.ddframe.rdb.sharding.parsing.parser.context.GeneratedKey;
-import com.dangdang.ddframe.rdb.sharding.parsing.parser.statement.SQLStatement;
-import com.dangdang.ddframe.rdb.sharding.parsing.parser.statement.insert.InsertStatement;
-import com.dangdang.ddframe.rdb.sharding.parsing.parser.statement.select.SelectStatement;
+import com.dangdang.ddframe.rdb.sharding.parsing.parser.sql.SQLStatement;
+import com.dangdang.ddframe.rdb.sharding.parsing.parser.sql.dml.insert.InsertStatement;
+import com.dangdang.ddframe.rdb.sharding.parsing.parser.sql.dql.select.SelectStatement;
 import com.dangdang.ddframe.rdb.sharding.rewrite.SQLBuilder;
 import com.dangdang.ddframe.rdb.sharding.rewrite.SQLRewriteEngine;
 import com.dangdang.ddframe.rdb.sharding.routing.SQLExecutionUnit;
@@ -46,7 +44,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * 需要解析的SQL路由器.
+ * SQL router with parse.
  * 
  * @author zhangiang
  */
@@ -70,18 +68,15 @@ public final class ParsingSQLRouter implements SQLRouter {
     @Override
     public SQLStatement parse(final String logicSQL, final int parametersSize) {
         SQLParsingEngine parsingEngine = new SQLParsingEngine(databaseType, logicSQL, shardingRule);
-        Context context = MetricsContext.start("Parse SQL");
         SQLStatement result = parsingEngine.parse();
         if (result instanceof InsertStatement) {
             ((InsertStatement) result).appendGenerateKeyToken(shardingRule, parametersSize);
         }
-        MetricsContext.stop(context);
         return result;
     }
     
     @Override
     public SQLRouteResult route(final String logicSQL, final List<Object> parameters, final SQLStatement sqlStatement) {
-        final Context context = MetricsContext.start("Route SQL");
         SQLRouteResult result = new SQLRouteResult(sqlStatement);
         if (sqlStatement instanceof InsertStatement && null != ((InsertStatement) sqlStatement).getGeneratedKey()) {
             processGeneratedKey(parameters, (InsertStatement) sqlStatement, result);
@@ -90,9 +85,7 @@ public final class ParsingSQLRouter implements SQLRouter {
         SQLRewriteEngine rewriteEngine = new SQLRewriteEngine(shardingRule, logicSQL, sqlStatement);
         boolean isSingleRouting = routingResult.isSingleRouting();
         if (sqlStatement instanceof SelectStatement && null != ((SelectStatement) sqlStatement).getLimit()) {
-            SelectStatement selectStatement = (SelectStatement) sqlStatement;
-            boolean isNeedFetchAll = (!selectStatement.getGroupByItems().isEmpty() || !selectStatement.getAggregationSelectItems().isEmpty()) && !selectStatement.isSameGroupByAndOrderByItems();
-            selectStatement.getLimit().processParameters(parameters, !isSingleRouting, isNeedFetchAll);
+            processLimit(parameters, (SelectStatement) sqlStatement, isSingleRouting);
         }
         SQLBuilder sqlBuilder = rewriteEngine.rewrite(!isSingleRouting);
         if (routingResult instanceof CartesianRoutingResult) {
@@ -106,9 +99,8 @@ public final class ParsingSQLRouter implements SQLRouter {
                 result.getExecutionUnits().add(new SQLExecutionUnit(each.getDataSourceName(), rewriteEngine.generateSQL(each, sqlBuilder)));
             }
         }
-        MetricsContext.stop(context);
         if (showSQL) {
-            logSQL(logicSQL, sqlStatement, result.getExecutionUnits(), parameters);
+            SQLLogger.logSQL(logicSQL, sqlStatement, result.getExecutionUnits(), parameters);
         }
         return result;
     }
@@ -116,25 +108,13 @@ public final class ParsingSQLRouter implements SQLRouter {
     private RoutingResult route(final List<Object> parameters, final SQLStatement sqlStatement) {
         Collection<String> tableNames = sqlStatement.getTables().getTableNames();
         RoutingEngine routingEngine;
-        if (1 == tableNames.size() || shardingRule.isAllBindingTables(tableNames)) {
+        if (1 == tableNames.size() || shardingRule.isAllBindingTables(tableNames) || shardingRule.isAllInDefaultDataSource(tableNames)) {
             routingEngine = new SimpleRoutingEngine(shardingRule, parameters, tableNames.iterator().next(), sqlStatement);
         } else {
-            // TODO 可配置是否执行笛卡尔积
+            // TODO config for cartesian set
             routingEngine = new ComplexRoutingEngine(shardingRule, parameters, tableNames, sqlStatement);
         }
         return routingEngine.route();
-    }
-    
-    private void logSQL(final String logicSQL, final SQLStatement sqlStatement, final Collection<SQLExecutionUnit> sqlExecutionUnits, final List<Object> parameters) {
-        SQLLogger.log("Logic SQL: {}", logicSQL);
-        SQLLogger.log("SQLStatement: {}", sqlStatement);
-        for (SQLExecutionUnit each : sqlExecutionUnits) {
-            if (parameters.isEmpty()) {
-                SQLLogger.log("Actual SQL: {} ::: {}", each.getDataSource(), each.getSql());
-            } else {
-                SQLLogger.log("Actual SQL: {} ::: {} ::: {}", each.getDataSource(), each.getSql(), parameters);
-            }
-        }
     }
     
     private void processGeneratedKey(final List<Object> parameters, final InsertStatement insertStatement, final SQLRouteResult sqlRouteResult) {
@@ -154,5 +134,14 @@ public final class ParsingSQLRouter implements SQLRouter {
         generatedKeys.add(generatedKey);
         sqlRouteResult.getGeneratedKeys().clear();
         sqlRouteResult.getGeneratedKeys().addAll(generatedKeys);
+    }
+    
+    private void processLimit(final List<Object> parameters, final SelectStatement selectStatement, final boolean isSingleRouting) {
+        if (isSingleRouting) {
+            selectStatement.setLimit(null);
+            return;
+        }
+        boolean isNeedFetchAll = (!selectStatement.getGroupByItems().isEmpty() || !selectStatement.getAggregationSelectItems().isEmpty()) && !selectStatement.isSameGroupByAndOrderByItems();
+        selectStatement.getLimit().processParameters(parameters, isNeedFetchAll);
     }
 }

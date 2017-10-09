@@ -37,7 +37,7 @@ import java.util.Calendar;
 import java.util.List;
 
 /**
- * 支持分片的结果集.
+ * Result that support sharding.
  *
  * @author zhangliang
  */
@@ -45,7 +45,7 @@ public final class ShardingResultSet extends AbstractResultSetAdapter {
     
     private final ResultSetMerger mergeResultSet;
     
-    public ShardingResultSet(final List<ResultSet> resultSets, final ResultSetMerger mergeResultSet) throws SQLException {
+    public ShardingResultSet(final List<ResultSet> resultSets, final ResultSetMerger mergeResultSet) {
         super(resultSets);
         this.mergeResultSet = mergeResultSet;
     }
@@ -56,9 +56,8 @@ public final class ShardingResultSet extends AbstractResultSetAdapter {
     }
     
     @Override
-    // TODO
     public boolean wasNull() throws SQLException {
-        return false;
+        return mergeResultSet.wasNull();
     }
     
     @Override
@@ -163,12 +162,12 @@ public final class ShardingResultSet extends AbstractResultSetAdapter {
     
     @Override
     public byte[] getBytes(final int columnIndex) throws SQLException {
-        return (byte[]) mergeResultSet.getValue(columnIndex, byte[].class);
+        return (byte[]) ResultSetUtil.convertValue(mergeResultSet.getValue(columnIndex, byte[].class), byte[].class);
     }
     
     @Override
     public byte[] getBytes(final String columnLabel) throws SQLException {
-        return (byte[]) mergeResultSet.getValue(columnLabel, byte[].class);
+        return (byte[]) ResultSetUtil.convertValue(mergeResultSet.getValue(columnLabel, byte[].class), byte[].class);
     }
     
     @Override

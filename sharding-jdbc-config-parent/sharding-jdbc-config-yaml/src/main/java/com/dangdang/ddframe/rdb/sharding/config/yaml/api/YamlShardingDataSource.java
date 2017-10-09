@@ -24,33 +24,44 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
 import javax.sql.DataSource;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.sql.SQLException;
 import java.util.Map;
 
 /**
- * 基于配置文件的分片规则.
+ * Sharding datasource for yaml.
  *
  * @author gaohongtao
  */
 public class YamlShardingDataSource extends ShardingDataSource {
     
-    public YamlShardingDataSource(final File yamlFile) throws IOException {
+    public YamlShardingDataSource(final File yamlFile) throws IOException, SQLException {
         super(new ShardingRuleBuilder(yamlFile.getName(), unmarshal(yamlFile)).build(), unmarshal(yamlFile).getProps());
     }
     
-    public YamlShardingDataSource(final Map<String, DataSource> dataSource, final File yamlFile) throws IOException {
+    public YamlShardingDataSource(final Map<String, DataSource> dataSource, final File yamlFile) throws IOException, SQLException {
         super(new ShardingRuleBuilder(yamlFile.getName(), dataSource, unmarshal(yamlFile)).build(), unmarshal(yamlFile).getProps());
     }
-    
+
+    public YamlShardingDataSource(final String logRoot, final byte[] yamlByteArray) throws IOException, SQLException {
+        super(new ShardingRuleBuilder(logRoot, unmarshal(yamlByteArray)).build(), unmarshal(yamlByteArray).getProps());
+    }
+
     private static YamlConfig unmarshal(final File yamlFile) throws IOException {
         try (
                 FileInputStream fileInputStream = new FileInputStream(yamlFile);
                 InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, "UTF-8")
-            ) {
+        ) {
             return new Yaml(new Constructor(YamlConfig.class)).loadAs(inputStreamReader, YamlConfig.class);
         }
+    }
+
+    private static YamlConfig unmarshal(final byte[] yamlByteArray) throws IOException {
+        return new Yaml(new Constructor(YamlConfig.class)).loadAs(new ByteArrayInputStream(yamlByteArray), YamlConfig.class);
+
     }
 }

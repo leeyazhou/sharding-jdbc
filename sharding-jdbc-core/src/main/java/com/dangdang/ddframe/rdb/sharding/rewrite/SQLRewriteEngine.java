@@ -20,11 +20,14 @@ package com.dangdang.ddframe.rdb.sharding.rewrite;
 
 import com.dangdang.ddframe.rdb.sharding.api.rule.BindingTableRule;
 import com.dangdang.ddframe.rdb.sharding.api.rule.ShardingRule;
+import com.dangdang.ddframe.rdb.sharding.parsing.lexer.token.DefaultKeyword;
+import com.dangdang.ddframe.rdb.sharding.parsing.parser.context.OrderItem;
 import com.dangdang.ddframe.rdb.sharding.parsing.parser.context.limit.Limit;
-import com.dangdang.ddframe.rdb.sharding.parsing.parser.statement.SQLStatement;
-import com.dangdang.ddframe.rdb.sharding.parsing.parser.statement.select.SelectStatement;
+import com.dangdang.ddframe.rdb.sharding.parsing.parser.sql.SQLStatement;
+import com.dangdang.ddframe.rdb.sharding.parsing.parser.sql.dql.select.SelectStatement;
 import com.dangdang.ddframe.rdb.sharding.parsing.parser.token.ItemsToken;
 import com.dangdang.ddframe.rdb.sharding.parsing.parser.token.OffsetToken;
+import com.dangdang.ddframe.rdb.sharding.parsing.parser.token.OrderByToken;
 import com.dangdang.ddframe.rdb.sharding.parsing.parser.token.RowCountToken;
 import com.dangdang.ddframe.rdb.sharding.parsing.parser.token.SQLToken;
 import com.dangdang.ddframe.rdb.sharding.parsing.parser.token.TableToken;
@@ -40,7 +43,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * SQL重写引擎.
+ * SQL rewrite engine.
+ * 
+ * <p>Rewrite logic SQL to actual SQL, should rewrite table name and optimize something.</p>
  *
  * @author zhangliang
  */
@@ -54,6 +59,13 @@ public final class SQLRewriteEngine {
     
     private final SQLStatement sqlStatement;
     
+    /**
+     * Constructs SQL rewrite engine.
+     * 
+     * @param shardingRule databases and tables sharding rule
+     * @param originalSQL original SQL
+     * @param sqlStatement SQL statement
+     */
     public SQLRewriteEngine(final ShardingRule shardingRule, final String originalSQL, final SQLStatement sqlStatement) {
         this.shardingRule = shardingRule;
         this.originalSQL = originalSQL;
@@ -62,10 +74,10 @@ public final class SQLRewriteEngine {
     }
     
     /**
-     * SQL改写.
+     * rewrite SQL.
      *
-     * @param isRewriteLimit 是否重写Limit
-     * @return SQL构建器
+     * @param isRewriteLimit is rewrite limit
+     * @return SQL builder
      */
     public SQLBuilder rewrite(final boolean isRewriteLimit) {
         SQLBuilder result = new SQLBuilder();
@@ -87,6 +99,8 @@ public final class SQLRewriteEngine {
                 appendLimitRowCount(result, (RowCountToken) each, count, sqlTokens, isRewriteLimit);
             } else if (each instanceof OffsetToken) {
                 appendLimitOffsetToken(result, (OffsetToken) each, count, sqlTokens, isRewriteLimit);
+            } else if (each instanceof OrderByToken) {
+                appendOrderByToken(result, count, sqlTokens);
             }
             count++;
         }
@@ -107,8 +121,7 @@ public final class SQLRewriteEngine {
         String tableName = sqlStatement.getTables().getTableNames().contains(tableToken.getTableName()) ? tableToken.getTableName() : tableToken.getOriginalLiterals();
         sqlBuilder.appendTable(tableName);
         int beginPosition = tableToken.getBeginPosition() + tableToken.getOriginalLiterals().length();
-        int endPosition = sqlTokens.size() - 1 == count ? originalSQL.length() : sqlTokens.get(count + 1).getBeginPosition();
-        sqlBuilder.appendLiterals(originalSQL.substring(beginPosition, endPosition));
+        appendRest(sqlBuilder, count, sqlTokens, beginPosition);
     }
     
     private void appendItemsToken(final SQLBuilder sqlBuilder, final ItemsToken itemsToken, final int count, final List<SQLToken> sqlTokens) {
@@ -117,8 +130,7 @@ public final class SQLRewriteEngine {
             sqlBuilder.appendLiterals(item);
         }
         int beginPosition = itemsToken.getBeginPosition();
-        int endPosition = sqlTokens.size() - 1 == count ? originalSQL.length() : sqlTokens.get(count + 1).getBeginPosition();
-        sqlBuilder.appendLiterals(originalSQL.substring(beginPosition, endPosition));
+        appendRest(sqlBuilder, count, sqlTokens, beginPosition);
     }
     
     private void appendLimitRowCount(final SQLBuilder sqlBuilder, final RowCountToken rowCountToken, final int count, final List<SQLToken> sqlTokens, final boolean isRewrite) {
@@ -132,34 +144,56 @@ public final class SQLRewriteEngine {
             sqlBuilder.appendLiterals(String.valueOf(limit.isRowCountRewriteFlag() ? rowCountToken.getRowCount() + limit.getOffsetValue() : rowCountToken.getRowCount()));
         }
         int beginPosition = rowCountToken.getBeginPosition() + String.valueOf(rowCountToken.getRowCount()).length();
-        int endPosition = sqlTokens.size() - 1 == count ? originalSQL.length() : sqlTokens.get(count + 1).getBeginPosition();
-        sqlBuilder.appendLiterals(originalSQL.substring(beginPosition, endPosition));
+        appendRest(sqlBuilder, count, sqlTokens, beginPosition);
     }
     
     private void appendLimitOffsetToken(final SQLBuilder sqlBuilder, final OffsetToken offsetToken, final int count, final List<SQLToken> sqlTokens, final boolean isRewrite) {
         sqlBuilder.appendLiterals(isRewrite ? "0" : String.valueOf(offsetToken.getOffset()));
         int beginPosition = offsetToken.getBeginPosition() + String.valueOf(offsetToken.getOffset()).length();
+        appendRest(sqlBuilder, count, sqlTokens, beginPosition);
+    }
+    
+    private void appendOrderByToken(final SQLBuilder sqlBuilder, final int count, final List<SQLToken> sqlTokens) {
+        SelectStatement selectStatement = (SelectStatement) sqlStatement;
+        StringBuilder orderByLiterals = new StringBuilder();
+        orderByLiterals.append(" ").append(DefaultKeyword.ORDER).append(" ").append(DefaultKeyword.BY).append(" ");
+        int i = 0;
+        for (OrderItem each : selectStatement.getOrderByItems()) {
+            if (0 == i) {
+                orderByLiterals.append(each.getColumnLabel()).append(" ").append(each.getType().name());
+            } else {
+                orderByLiterals.append(",").append(each.getColumnLabel()).append(" ").append(each.getType().name());
+            }
+            i++;
+        }
+        orderByLiterals.append(" ");
+        sqlBuilder.appendLiterals(orderByLiterals.toString());
+        int beginPosition = ((SelectStatement) sqlStatement).getGroupByLastPosition();
+        appendRest(sqlBuilder, count, sqlTokens, beginPosition);
+    }
+    
+    private void appendRest(final SQLBuilder sqlBuilder, final int count, final List<SQLToken> sqlTokens, final int beginPosition) {
         int endPosition = sqlTokens.size() - 1 == count ? originalSQL.length() : sqlTokens.get(count + 1).getBeginPosition();
         sqlBuilder.appendLiterals(originalSQL.substring(beginPosition, endPosition));
     }
     
     /**
-     * 生成SQL语句.
+     * Generate SQL string.
      * 
-     * @param tableUnit 路由表单元
-     * @param sqlBuilder SQL构建器
-     * @return SQL语句
+     * @param tableUnit route table unit
+     * @param sqlBuilder SQL builder
+     * @return SQL string
      */
     public String generateSQL(final TableUnit tableUnit, final SQLBuilder sqlBuilder) {
         return sqlBuilder.toSQL(getTableTokens(tableUnit));
     }
     
     /**
-     * 生成SQL语句.
+     * Generate SQL string.
      *
-     * @param cartesianTableReference 笛卡尔积路由表单元
-     * @param sqlBuilder SQL构建器
-     * @return SQL语句
+     * @param cartesianTableReference cartesian table reference
+     * @param sqlBuilder SQL builder
+     * @return SQL string
      */
     public String generateSQL(final CartesianTableReference cartesianTableReference, final SQLBuilder sqlBuilder) {
         return sqlBuilder.toSQL(getTableTokens(cartesianTableReference));

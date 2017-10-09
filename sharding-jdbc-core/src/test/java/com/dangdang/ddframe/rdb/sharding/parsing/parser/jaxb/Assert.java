@@ -36,7 +36,7 @@ public final class Assert {
     private String id;
     
     @XmlAttribute
-    private String sql;
+    private String parameters;
     
     @XmlElement(name = "tables") 
     private Tables tables;
@@ -44,6 +44,10 @@ public final class Assert {
     @XmlElement(name = "conditions") 
     private Conditions conditions;
     
+    @XmlElementWrapper(name = "table-tokens")
+    @XmlElement(name = "table-token")
+    private List<TableToken> tableTokens;
+
     @XmlElementWrapper(name = "order-by-columns")
     @XmlElement(name = "order-by-column") 
     private List<OrderByColumn> orderByColumns;

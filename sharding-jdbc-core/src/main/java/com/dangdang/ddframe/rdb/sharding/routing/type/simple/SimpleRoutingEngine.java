@@ -27,26 +27,27 @@ import com.dangdang.ddframe.rdb.sharding.hint.HintManagerHolder;
 import com.dangdang.ddframe.rdb.sharding.hint.ShardingKey;
 import com.dangdang.ddframe.rdb.sharding.parsing.parser.context.condition.Column;
 import com.dangdang.ddframe.rdb.sharding.parsing.parser.context.condition.Condition;
-import com.dangdang.ddframe.rdb.sharding.parsing.parser.statement.SQLStatement;
+import com.dangdang.ddframe.rdb.sharding.parsing.parser.sql.SQLStatement;
 import com.dangdang.ddframe.rdb.sharding.routing.type.RoutingEngine;
 import com.dangdang.ddframe.rdb.sharding.routing.type.RoutingResult;
 import com.dangdang.ddframe.rdb.sharding.routing.type.TableUnit;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
- * 简单路由引擎.
+ * Simple routing engine.
  * 
  * @author zhangliang
  */
 @RequiredArgsConstructor
-@Slf4j
 public final class SimpleRoutingEngine implements RoutingEngine {
     
     private final ShardingRule shardingRule;
@@ -61,29 +62,27 @@ public final class SimpleRoutingEngine implements RoutingEngine {
     public RoutingResult route() {
         TableRule tableRule = shardingRule.getTableRule(logicTableName);
         Collection<String> routedDataSources = routeDataSources(tableRule);
-        Collection<String> routedTables = routeTables(tableRule, routedDataSources);
-        return generateRoutingResult(tableRule, routedDataSources, routedTables);
+        Map<String, Collection<String>> routedMap = new LinkedHashMap<>(routedDataSources.size());
+        for (String each : routedDataSources) {
+            routedMap.put(each, routeTables(tableRule, each));
+        }
+        return generateRoutingResult(tableRule, routedMap);
     }
     
     private Collection<String> routeDataSources(final TableRule tableRule) {
         DatabaseShardingStrategy strategy = shardingRule.getDatabaseShardingStrategy(tableRule);
         List<ShardingValue<?>> shardingValues = HintManagerHolder.isUseShardingHint() ? getDatabaseShardingValuesFromHint(strategy.getShardingColumns())
                 : getShardingValues(strategy.getShardingColumns());
-        logBeforeRoute("database", logicTableName, tableRule.getActualDatasourceNames(), strategy.getShardingColumns(), shardingValues);
-        Collection<String> result = strategy.doStaticSharding(sqlStatement.getType(), tableRule.getActualDatasourceNames(), shardingValues);
-        logAfterRoute("database", logicTableName, result);
+        Collection<String> result = strategy.doStaticSharding(tableRule.getActualDatasourceNames(), shardingValues);
         Preconditions.checkState(!result.isEmpty(), "no database route info");
         return result;
     }
     
-    private Collection<String> routeTables(final TableRule tableRule, final Collection<String> routedDataSources) {
+    private Collection<String> routeTables(final TableRule tableRule, final String routedDataSource) {
         TableShardingStrategy strategy = shardingRule.getTableShardingStrategy(tableRule);
         List<ShardingValue<?>> shardingValues = HintManagerHolder.isUseShardingHint() ? getTableShardingValuesFromHint(strategy.getShardingColumns())
                 : getShardingValues(strategy.getShardingColumns());
-        logBeforeRoute("table", logicTableName, tableRule.getActualTables(), strategy.getShardingColumns(), shardingValues);
-        Collection<String> result = tableRule.isDynamic() ? strategy.doDynamicSharding(shardingValues)
-                : strategy.doStaticSharding(sqlStatement.getType(), tableRule.getActualTableNames(routedDataSources), shardingValues);
-        logAfterRoute("table", logicTableName, result);
+        Collection<String> result = tableRule.isDynamic() ? strategy.doDynamicSharding(shardingValues) : strategy.doStaticSharding(tableRule.getActualTableNames(routedDataSource), shardingValues);
         Preconditions.checkState(!result.isEmpty(), "no table route info");
         return result;
     }
@@ -121,18 +120,13 @@ public final class SimpleRoutingEngine implements RoutingEngine {
         return result;
     }
     
-    private void logBeforeRoute(final String type, final String logicTable, final Collection<?> targets, final Collection<String> shardingColumns, final List<ShardingValue<?>> shardingValues) {
-        log.debug("Before {} sharding {} routes db names: {} sharding columns: {} sharding values: {}", type, logicTable, targets, shardingColumns, shardingValues);
-    }
-    
-    private void logAfterRoute(final String type, final String logicTable, final Collection<String> shardingResults) {
-        log.debug("After {} sharding {} result: {}", type, logicTable, shardingResults);
-    }
-    
-    private RoutingResult generateRoutingResult(final TableRule tableRule, final Collection<String> routedDataSources, final Collection<String> routedTables) {
+    private RoutingResult generateRoutingResult(final TableRule tableRule, final Map<String, Collection<String>> routedMap) {
         RoutingResult result = new RoutingResult();
-        for (DataNode each : tableRule.getActualDataNodes(routedDataSources, routedTables)) {
-            result.getTableUnits().getTableUnits().add(new TableUnit(each.getDataSourceName(), logicTableName, each.getTableName()));
+        for (Entry<String, Collection<String>> entry : routedMap.entrySet()) {
+            Collection<DataNode> dataNodes = tableRule.getActualDataNodes(entry.getKey(), entry.getValue());
+            for (DataNode each : dataNodes) {
+                result.getTableUnits().getTableUnits().add(new TableUnit(each.getDataSourceName(), logicTableName, each.getTableName()));
+            }
         }
         return result;
     }

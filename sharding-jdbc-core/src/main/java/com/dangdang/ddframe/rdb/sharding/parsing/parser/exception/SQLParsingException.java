@@ -19,9 +19,15 @@ package com.dangdang.ddframe.rdb.sharding.parsing.parser.exception;
 
 import com.dangdang.ddframe.rdb.sharding.exception.ShardingJdbcException;
 import com.dangdang.ddframe.rdb.sharding.parsing.lexer.Lexer;
+import com.dangdang.ddframe.rdb.sharding.parsing.lexer.LexerEngine;
 import com.dangdang.ddframe.rdb.sharding.parsing.lexer.token.TokenType;
 
-public class SQLParsingException extends ShardingJdbcException {
+/**
+ * Throw exception when SQL parsing error.
+ * 
+ * @author zhangliang 
+ */
+public final class SQLParsingException extends ShardingJdbcException {
     
     private static final long serialVersionUID = -6408790652103666096L;
     
@@ -37,7 +43,7 @@ public class SQLParsingException extends ShardingJdbcException {
         super(String.format(UNMATCH_MESSAGE, expectedTokenType, lexer.getCurrentToken().getType(), lexer.getCurrentToken().getLiterals()));
     }
     
-    public SQLParsingException(final Lexer lexer) {
-        super(String.format(TOKEN_ERROR_MESSAGE, lexer.getCurrentToken().getType(), lexer.getCurrentToken().getLiterals()));
+    public SQLParsingException(final LexerEngine lexerEngine) {
+        super(String.format(TOKEN_ERROR_MESSAGE, lexerEngine.getCurrentToken().getType(), lexerEngine.getCurrentToken().getLiterals()));
     }
 }

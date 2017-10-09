@@ -18,8 +18,6 @@
 package com.dangdang.ddframe.rdb.sharding.keygen;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,35 +26,29 @@ import java.util.Calendar;
 import java.util.Date;
 
 /**
- * 默认的主键生成器.
+ * Default distributed primary key generator.
  * 
  * <p>
- * 长度为64bit,从高位到低位依次为
+ * Use snowflake algorithm. Length is 64 bit.
  * </p>
  * 
  * <pre>
- * 1bit   符号位 
- * 41bits 时间偏移量从2016年11月1日零点到现在的毫秒数
- * 10bits 工作进程Id
- * 12bits 同一个毫秒内的自增量
+ * 1bit   sign bit.
+ * 41bits timestamp offset from 2016.11.01(Sharding-JDBC distributed primary key published data) to now.
+ * 10bits worker process id.
+ * 12bits auto increment offset in one mills
  * </pre>
  * 
  * <p>
- * 工作进程Id获取优先级: 系统变量{@code sharding-jdbc.default.key.generator.worker.id} 大于 环境变量{@code SHARDING_JDBC_DEFAULT_KEY_GENERATOR_WORKER_ID}
- * ,另外可以调用@{@code DefaultKeyGenerator.setWorkerId}进行设置
+ * Call @{@code DefaultKeyGenerator.setWorkerId} to set.
  * </p>
  * 
  * @author gaohongtao
  */
-@Getter
 @Slf4j
 public final class DefaultKeyGenerator implements KeyGenerator {
     
     public static final long EPOCH;
-    
-    public static final String WORKER_ID_PROPERTY_KEY = "sharding-jdbc.default.key.generator.worker.id";
-    
-    public static final String WORKER_ID_ENV_KEY = "SHARDING_JDBC_DEFAULT_KEY_GENERATOR_WORKER_ID";
     
     private static final long SEQUENCE_BITS = 12L;
     
@@ -73,7 +65,6 @@ public final class DefaultKeyGenerator implements KeyGenerator {
     @Setter
     private static TimeService timeService = new TimeService();
     
-    @Getter
     private static long workerId;
     
     static {
@@ -84,30 +75,16 @@ public final class DefaultKeyGenerator implements KeyGenerator {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
         EPOCH = calendar.getTimeInMillis();
-        initWorkerId();
     }
     
     private long sequence;
     
     private long lastTime;
     
-    public static void initWorkerId() {
-        String workerId = System.getProperty(WORKER_ID_PROPERTY_KEY);
-        if (!Strings.isNullOrEmpty(workerId)) {
-            setWorkerId(Long.valueOf(workerId));
-            return;
-        }
-        workerId = System.getenv(WORKER_ID_ENV_KEY);
-        if (Strings.isNullOrEmpty(workerId)) {
-            return;
-        }
-        setWorkerId(Long.valueOf(workerId));
-    }
-    
     /**
-     * 设置工作进程Id.
+     * Set work process id.
      * 
-     * @param workerId 工作进程Id
+     * @param workerId work process id
      */
     public static void setWorkerId(final long workerId) {
         Preconditions.checkArgument(workerId >= 0L && workerId < WORKER_ID_MAX_VALUE);
@@ -115,9 +92,9 @@ public final class DefaultKeyGenerator implements KeyGenerator {
     }
     
     /**
-     * 生成Id.
+     * Generate key.
      * 
-     * @return 返回@{@link Long}类型的Id
+     * @return key type is @{@link Long}.
      */
     @Override
     public synchronized Number generateKey() {

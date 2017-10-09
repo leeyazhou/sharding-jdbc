@@ -19,23 +19,14 @@ package com.dangdang.ddframe.rdb.sharding.parsing;
 
 import com.dangdang.ddframe.rdb.sharding.api.rule.ShardingRule;
 import com.dangdang.ddframe.rdb.sharding.constant.DatabaseType;
-import com.dangdang.ddframe.rdb.sharding.parsing.lexer.token.DefaultKeyword;
-import com.dangdang.ddframe.rdb.sharding.parsing.lexer.token.Symbol;
-import com.dangdang.ddframe.rdb.sharding.parsing.parser.SQLParser;
-import com.dangdang.ddframe.rdb.sharding.parsing.parser.statement.SQLStatement;
-import com.dangdang.ddframe.rdb.sharding.parsing.parser.dialect.mysql.MySQLParser;
-import com.dangdang.ddframe.rdb.sharding.parsing.parser.dialect.oracle.OracleParser;
-import com.dangdang.ddframe.rdb.sharding.parsing.parser.dialect.postgresql.PostgreSQLParser;
-import com.dangdang.ddframe.rdb.sharding.parsing.parser.dialect.sqlserver.SQLServerParser;
-import com.dangdang.ddframe.rdb.sharding.parsing.parser.exception.SQLParsingUnsupportedException;
-import com.dangdang.ddframe.rdb.sharding.parsing.parser.statement.delete.DeleteParserFactory;
-import com.dangdang.ddframe.rdb.sharding.parsing.parser.statement.insert.InsertParserFactory;
-import com.dangdang.ddframe.rdb.sharding.parsing.parser.statement.select.SelectParserFactory;
-import com.dangdang.ddframe.rdb.sharding.parsing.parser.statement.update.UpdateParserFactory;
+import com.dangdang.ddframe.rdb.sharding.parsing.lexer.LexerEngine;
+import com.dangdang.ddframe.rdb.sharding.parsing.lexer.LexerEngineFactory;
+import com.dangdang.ddframe.rdb.sharding.parsing.parser.sql.SQLStatement;
+import com.dangdang.ddframe.rdb.sharding.parsing.parser.sql.SQLParserFactory;
 import lombok.RequiredArgsConstructor;
 
 /**
- * SQL解析引擎.
+ * SQL parsing engine.
  *
  * @author zhangliang
  */
@@ -49,53 +40,13 @@ public final class SQLParsingEngine {
     private final ShardingRule shardingRule;
     
     /**
-     * 解析SQL.
+     * Parse SQL.
      * 
-     * @return SQL语句对象
+     * @return parsed SQL statement
      */
     public SQLStatement parse() {
-        SQLParser sqlParser = getSQLParser();
-        sqlParser.skipIfEqual(Symbol.SEMI);
-        if (sqlParser.equalAny(DefaultKeyword.WITH)) {
-            skipWith(sqlParser);
-        }
-        if (sqlParser.equalAny(DefaultKeyword.SELECT)) {
-            return SelectParserFactory.newInstance(sqlParser).parse();
-        }
-        if (sqlParser.equalAny(DefaultKeyword.INSERT)) {
-            return InsertParserFactory.newInstance(shardingRule, sqlParser).parse();
-        }
-        if (sqlParser.equalAny(DefaultKeyword.UPDATE)) {
-            return UpdateParserFactory.newInstance(sqlParser).parse();
-        }
-        if (sqlParser.equalAny(DefaultKeyword.DELETE)) {
-            return DeleteParserFactory.newInstance(sqlParser).parse();
-        }
-        throw new SQLParsingUnsupportedException(sqlParser.getLexer().getCurrentToken().getType());
-    }
-    
-    private SQLParser getSQLParser() {
-        switch (dbType) {
-            case H2:
-            case MySQL:
-                return new MySQLParser(sql, shardingRule);
-            case Oracle:
-                return new OracleParser(sql, shardingRule);
-            case SQLServer:
-                return new SQLServerParser(sql, shardingRule);
-            case PostgreSQL:
-                return new PostgreSQLParser(sql, shardingRule);
-            default:
-                throw new UnsupportedOperationException(dbType.name());
-        }
-    }
-    
-    private void skipWith(final SQLParser sqlParser) {
-        sqlParser.getLexer().nextToken();
-        do {
-            sqlParser.skipUntil(DefaultKeyword.AS);
-            sqlParser.accept(DefaultKeyword.AS);
-            sqlParser.skipParentheses();
-        } while (sqlParser.skipIfEqual(Symbol.COMMA));
+        LexerEngine lexerEngine = LexerEngineFactory.newInstance(dbType, sql);
+        lexerEngine.nextToken();
+        return SQLParserFactory.newInstance(dbType, lexerEngine.getCurrentToken().getType(), shardingRule, lexerEngine).parse();
     }
 }

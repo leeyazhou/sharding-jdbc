@@ -21,7 +21,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
- * 配置项常量.
+ * Sharding properties constant.
  * 
  * @author gaohongtao
  * @author caohao
@@ -31,38 +31,24 @@ import lombok.RequiredArgsConstructor;
 public enum ShardingPropertiesConstant {
     
     /**
-     * 是否开启显示SQL.
+     * Enable or Disable to show SQL details.
      * 
      * <p>
-     * 默认值: 关闭
+     * Print SQL details can help developers debug easier. 
+     * The details includes: logic SQL, parse context and rewrote actual SQL list. 
+     * Enable this property will log into log topic: {@code Sharding-JDBC-SQL}, log level is {@code INFO}.
+     * Default: false
      * </p>
      */
-    SQL_SHOW("sql.show", Boolean.TRUE.toString(), boolean.class),
+    SQL_SHOW("sql.show", Boolean.FALSE.toString(), boolean.class),
     
     /**
-     * 是否开启SQL.
-     *
-     * <p>
-     * 默认值: 关闭
-     * </p>
-     */
-    METRICS_ENABLE("metrics.enable", Boolean.FALSE.toString(), boolean.class),
-    
-    /**
-     * 度量输出周期.
+     * Worker thread max size.
      * 
      * <p>
-     * 单位: 毫秒.
-     * 默认值: 30000毫秒.
-     * </p>
-     */
-    METRICS_MILLISECONDS_PERIOD("metrics.millisecond.period", "30000", long.class),
-    
-    /**
-     * 工作线程数量.
-     * 
-     * <p>
-     * 默认值: 100
+     * Execute SQL Statement and PrepareStatement will use this thread pool.
+     * One sharding data source will use a independent thread pool, it does not share thread pool even different data source in same JVM.
+     * Default: same with CPU cores.
      * </p>
      */
     EXECUTOR_SIZE("executor.size", String.valueOf(Runtime.getRuntime().availableProcessors()), int.class);
@@ -74,10 +60,10 @@ public enum ShardingPropertiesConstant {
     private final Class<?> type;
     
     /**
-     * 根据属性键查找枚举.
+     * Find value via property key.
      * 
-     * @param key 属性键
-     * @return 枚举值
+     * @param key property key
+     * @return value enum, return {@code null} if not found
      */
     public static ShardingPropertiesConstant findByKey(final String key) {
         for (ShardingPropertiesConstant each : ShardingPropertiesConstant.values()) {
