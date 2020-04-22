@@ -18,7 +18,7 @@
 package org.apache.shardingsphere.sharding.merge.dql.groupby;
 
 import com.google.common.collect.Lists;
-import org.apache.shardingsphere.sql.parser.core.constant.OrderDirection;
+import org.apache.shardingsphere.sql.parser.sql.constant.OrderDirection;
 import org.apache.shardingsphere.sql.parser.binder.segment.select.groupby.GroupByContext;
 import org.apache.shardingsphere.sql.parser.binder.segment.select.orderby.OrderByContext;
 import org.apache.shardingsphere.sql.parser.binder.segment.select.orderby.OrderByItem;
@@ -27,7 +27,7 @@ import org.apache.shardingsphere.sql.parser.binder.segment.select.projection.Pro
 import org.apache.shardingsphere.sql.parser.binder.statement.dml.SelectStatementContext;
 import org.apache.shardingsphere.sql.parser.sql.segment.dml.order.item.IndexOrderByItemSegment;
 import org.apache.shardingsphere.sql.parser.sql.statement.dml.SelectStatement;
-import org.apache.shardingsphere.underlying.executor.QueryResult;
+import org.apache.shardingsphere.underlying.executor.sql.jdbc.queryresult.QueryResult;
 import org.apache.shardingsphere.underlying.merge.result.impl.memory.MemoryQueryResultRow;
 import org.junit.Test;
 

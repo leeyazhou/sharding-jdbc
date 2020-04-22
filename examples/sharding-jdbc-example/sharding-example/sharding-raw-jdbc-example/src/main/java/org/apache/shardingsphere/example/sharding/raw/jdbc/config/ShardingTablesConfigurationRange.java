@@ -17,15 +17,16 @@
 
 package org.apache.shardingsphere.example.sharding.raw.jdbc.config;
 
-import org.apache.shardingsphere.example.algorithm.PreciseModuloShardingTableAlgorithm;
-import org.apache.shardingsphere.example.algorithm.RangeModuloShardingTableAlgorithm;
-import org.apache.shardingsphere.example.core.api.DataSourceUtil;
-import org.apache.shardingsphere.example.config.ExampleConfiguration;
 import org.apache.shardingsphere.api.config.sharding.KeyGeneratorConfiguration;
 import org.apache.shardingsphere.api.config.sharding.ShardingRuleConfiguration;
 import org.apache.shardingsphere.api.config.sharding.TableRuleConfiguration;
 import org.apache.shardingsphere.api.config.sharding.strategy.StandardShardingStrategyConfiguration;
+import org.apache.shardingsphere.core.strategy.keygen.SnowflakeKeyGenerateAlgorithm;
+import org.apache.shardingsphere.example.algorithm.StandardModuloShardingTableAlgorithm;
+import org.apache.shardingsphere.example.config.ExampleConfiguration;
+import org.apache.shardingsphere.example.core.api.DataSourceUtil;
 import org.apache.shardingsphere.shardingjdbc.api.ShardingDataSourceFactory;
+import org.apache.shardingsphere.spi.keygen.KeyGenerateAlgorithm;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
@@ -42,26 +43,31 @@ public final class ShardingTablesConfigurationRange implements ExampleConfigurat
         shardingRuleConfig.getTableRuleConfigs().add(getOrderItemTableRuleConfiguration());
         shardingRuleConfig.getBindingTableGroups().add("t_order, t_order_item");
         shardingRuleConfig.getBroadcastTables().add("t_address");
-        shardingRuleConfig.setDefaultTableShardingStrategyConfig(
-                new StandardShardingStrategyConfiguration("order_id", new PreciseModuloShardingTableAlgorithm(), new RangeModuloShardingTableAlgorithm()));
+        shardingRuleConfig.setDefaultTableShardingStrategyConfig(new StandardShardingStrategyConfiguration("order_id", new StandardModuloShardingTableAlgorithm()));
         return ShardingDataSourceFactory.createDataSource(createDataSourceMap(), shardingRuleConfig, new Properties());
     }
     
     private static TableRuleConfiguration getOrderTableRuleConfiguration() {
         TableRuleConfiguration result = new TableRuleConfiguration("t_order", "demo_ds.t_order_${[0, 1]}");
-        result.setKeyGeneratorConfig(new KeyGeneratorConfiguration("SNOWFLAKE", "order_id", getProperties()));
+        result.setKeyGeneratorConfig(new KeyGeneratorConfiguration("order_id", getSnowflakeKeyGenerateAlgorithm()));
         return result;
     }
     
     private static TableRuleConfiguration getOrderItemTableRuleConfiguration() {
         TableRuleConfiguration result = new TableRuleConfiguration("t_order_item", "demo_ds.t_order_item_${[0, 1]}");
-        result.setKeyGeneratorConfig(new KeyGeneratorConfiguration("SNOWFLAKE", "order_item_id", getProperties()));
+        result.setKeyGeneratorConfig(new KeyGeneratorConfiguration("order_item_id", getSnowflakeKeyGenerateAlgorithm()));
         return result;
     }
     
     private static Map<String, DataSource> createDataSourceMap() {
         Map<String, DataSource> result = new HashMap<>();
         result.put("demo_ds", DataSourceUtil.createDataSource("demo_ds"));
+        return result;
+    }
+    
+    private static KeyGenerateAlgorithm getSnowflakeKeyGenerateAlgorithm() {
+        KeyGenerateAlgorithm result = new SnowflakeKeyGenerateAlgorithm();
+        result.setProperties(getProperties());
         return result;
     }
     

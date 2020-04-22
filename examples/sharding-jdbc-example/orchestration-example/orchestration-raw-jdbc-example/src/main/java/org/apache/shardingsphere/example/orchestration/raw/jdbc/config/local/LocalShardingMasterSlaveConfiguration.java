@@ -18,18 +18,20 @@
 package org.apache.shardingsphere.example.orchestration.raw.jdbc.config.local;
 
 import com.google.common.collect.Lists;
-import org.apache.shardingsphere.example.algorithm.PreciseModuloShardingDatabaseAlgorithm;
-import org.apache.shardingsphere.example.algorithm.PreciseModuloShardingTableAlgorithm;
-import org.apache.shardingsphere.example.core.api.DataSourceUtil;
-import org.apache.shardingsphere.example.config.ExampleConfiguration;
 import org.apache.shardingsphere.api.config.masterslave.MasterSlaveRuleConfiguration;
 import org.apache.shardingsphere.api.config.sharding.KeyGeneratorConfiguration;
 import org.apache.shardingsphere.api.config.sharding.ShardingRuleConfiguration;
 import org.apache.shardingsphere.api.config.sharding.TableRuleConfiguration;
 import org.apache.shardingsphere.api.config.sharding.strategy.StandardShardingStrategyConfiguration;
-import org.apache.shardingsphere.orchestration.center.configuration.InstanceConfiguration;
-import org.apache.shardingsphere.orchestration.center.configuration.OrchestrationConfiguration;
+import org.apache.shardingsphere.core.strategy.keygen.SnowflakeKeyGenerateAlgorithm;
+import org.apache.shardingsphere.example.algorithm.StandardModuloShardingDatabaseAlgorithm;
+import org.apache.shardingsphere.example.algorithm.StandardModuloShardingTableAlgorithm;
+import org.apache.shardingsphere.example.config.ExampleConfiguration;
+import org.apache.shardingsphere.example.core.api.DataSourceUtil;
+import org.apache.shardingsphere.orchestration.center.config.CenterConfiguration;
+import org.apache.shardingsphere.orchestration.center.config.OrchestrationConfiguration;
 import org.apache.shardingsphere.shardingjdbc.orchestration.api.OrchestrationShardingDataSourceFactory;
+import org.apache.shardingsphere.spi.keygen.KeyGenerateAlgorithm;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
@@ -41,10 +43,10 @@ import java.util.Properties;
 
 public final class LocalShardingMasterSlaveConfiguration implements ExampleConfiguration {
     
-    private final Map<String, InstanceConfiguration> instanceConfigurationMap;
+    private final Map<String, CenterConfiguration> centerConfigurationMap;
     
-    public LocalShardingMasterSlaveConfiguration(final Map<String, InstanceConfiguration> instanceConfigurationMap) {
-        this.instanceConfigurationMap = instanceConfigurationMap;
+    public LocalShardingMasterSlaveConfiguration(final Map<String, CenterConfiguration> centerConfigurationMap) {
+        this.centerConfigurationMap = centerConfigurationMap;
     }
     
     @Override
@@ -54,10 +56,10 @@ public final class LocalShardingMasterSlaveConfiguration implements ExampleConfi
         shardingRuleConfig.getTableRuleConfigs().add(getOrderItemTableRuleConfiguration());
         shardingRuleConfig.getBindingTableGroups().add("t_order, t_order_item");
         shardingRuleConfig.getBroadcastTables().add("t_address");
-        shardingRuleConfig.setDefaultDatabaseShardingStrategyConfig(new StandardShardingStrategyConfiguration("user_id", new PreciseModuloShardingDatabaseAlgorithm()));
-        shardingRuleConfig.setDefaultTableShardingStrategyConfig(new StandardShardingStrategyConfiguration("order_id", new PreciseModuloShardingTableAlgorithm()));
+        shardingRuleConfig.setDefaultDatabaseShardingStrategyConfig(new StandardShardingStrategyConfiguration("user_id", new StandardModuloShardingDatabaseAlgorithm()));
+        shardingRuleConfig.setDefaultTableShardingStrategyConfig(new StandardShardingStrategyConfiguration("order_id", new StandardModuloShardingTableAlgorithm()));
         shardingRuleConfig.setMasterSlaveRuleConfigs(getMasterSlaveRuleConfigurations());
-        OrchestrationConfiguration orchestrationConfig = new OrchestrationConfiguration(instanceConfigurationMap);
+        OrchestrationConfiguration orchestrationConfig = new OrchestrationConfiguration(centerConfigurationMap);
         return OrchestrationShardingDataSourceFactory.createDataSource(createDataSourceMap(), shardingRuleConfig, new Properties(), orchestrationConfig);
     }
     
@@ -89,8 +91,18 @@ public final class LocalShardingMasterSlaveConfiguration implements ExampleConfi
     }
     
     private static KeyGeneratorConfiguration getKeyGeneratorConfiguration() {
-        Properties properties = new Properties();
-        properties.setProperty("worker.id", "123");
-        return new KeyGeneratorConfiguration("SNOWFLAKE", "order_id", properties);
+        return new KeyGeneratorConfiguration("order_id", getSnowflakeKeyGenerateAlgorithm());
+    }
+    
+    private static KeyGenerateAlgorithm getSnowflakeKeyGenerateAlgorithm() {
+        KeyGenerateAlgorithm result = new SnowflakeKeyGenerateAlgorithm();
+        result.setProperties(getProperties());
+        return result;
+    }
+    
+    private static Properties getProperties() {
+        Properties result = new Properties();
+        result.setProperty("worker.id", "123");
+        return result;
     }
 }

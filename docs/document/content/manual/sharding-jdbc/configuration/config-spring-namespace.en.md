@@ -1,5 +1,4 @@
 +++
-toc = true
 title = "Spring Namespace Configuration"
 weight = 4
 +++
@@ -9,7 +8,7 @@ weight = 4
 Inline expression identifier can can use `${...} ` or `$->{...}`, but the former one clashes with the placeholder in property documents of Spring, so it is suggested to use `$->{...}` for inline expression identifier under Spring environment.
 
 ## Example
-example: [shardingsphere-example](https://github.com/apache/incubator-shardingsphere-example/tree/dev/sharding-jdbc-example/sharding-example/sharding-spring-namespace-jpa-example/src/main/resources/META-INF)
+example: [shardingsphere-example](https://github.com/apache/shardingsphere-example/tree/dev/sharding-jdbc-example/sharding-example/sharding-spring-namespace-jpa-example/src/main/resources/META-INF)
 ### Sharding
 
 ```xml
@@ -568,7 +567,7 @@ Namespace: http://shardingsphere.apache.org/schema/shardingsphere/sharding/shard
 | type      | Attribute | Auto-increment key generator `Type`; self-defined generator or internal Type generator (SNOWFLAKE/UUID) can both be selected |
 | props-ref | Attribute | The Property configuration reference of key generators       |
 
-#### PropertiesConstant
+#### Properties
 
 Property configuration that can include these properties of these key generators.
 

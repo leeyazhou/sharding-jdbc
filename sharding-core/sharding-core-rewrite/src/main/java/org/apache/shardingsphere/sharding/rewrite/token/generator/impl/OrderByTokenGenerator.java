@@ -20,14 +20,14 @@ package org.apache.shardingsphere.sharding.rewrite.token.generator.impl;
 import org.apache.shardingsphere.sql.parser.binder.segment.select.orderby.OrderByItem;
 import org.apache.shardingsphere.sql.parser.binder.statement.SQLStatementContext;
 import org.apache.shardingsphere.sql.parser.binder.statement.dml.SelectStatementContext;
-import org.apache.shardingsphere.sql.parser.core.constant.QuoteCharacter;
+import org.apache.shardingsphere.sql.parser.sql.constant.QuoteCharacter;
 import org.apache.shardingsphere.sql.parser.sql.segment.dml.order.item.ColumnOrderByItemSegment;
 import org.apache.shardingsphere.sql.parser.sql.segment.dml.order.item.ExpressionOrderByItemSegment;
 import org.apache.shardingsphere.sharding.rewrite.token.generator.IgnoreForSingleRoute;
 import org.apache.shardingsphere.sql.parser.sql.segment.generic.table.SimpleTableSegment;
 import org.apache.shardingsphere.sql.parser.sql.statement.dml.SelectStatement;
 import org.apache.shardingsphere.underlying.rewrite.sql.token.generator.OptionalSQLTokenGenerator;
-import org.apache.shardingsphere.sharding.rewrite.token.pojo.impl.OrderByToken;
+import org.apache.shardingsphere.sharding.rewrite.token.pojo.OrderByToken;
 
 /**
  * Order by token generator.
@@ -58,7 +58,7 @@ public final class OrderByTokenGenerator implements OptionalSQLTokenGenerator<Se
         }
         return result;
     }
-
+    
     private int generateOrderByIndex(final SelectStatementContext selectStatementContext) {
         if (selectStatementContext.getGroupByContext().getLastIndex() > 0) {
             return selectStatementContext.getGroupByContext().getLastIndex() + 1;
@@ -67,7 +67,7 @@ public final class OrderByTokenGenerator implements OptionalSQLTokenGenerator<Se
         if (selectStatement.getWhere().isPresent()) {
             return selectStatement.getWhere().get().getStopIndex() + 1;
         } else {
-            return selectStatement.getSimpleTableSegments().stream().mapToInt(SimpleTableSegment::getStopIndex).max().getAsInt() + 1;
+            return selectStatementContext.getSimpleTableSegments().stream().mapToInt(SimpleTableSegment::getStopIndex).max().getAsInt() + 1;
         }
     }
 }
